@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6ecaaae0ea91564f8e56d78be12afa0, type: 3}
+  m_Name: CustomRP
+  m_EditorClassIdentifier: Assembly-CSharp::CustomRenderPipelineAsset
+  m_CameraRendererShader: {fileID: 4800000, guid: 55df5f3f8f244ed3bd77e55b00c2d7a7,
+    type: 3}
+  m_UseDynamicBatching: 1
+  m_UseGPUInstancing: 1
+  m_UseSRPBatcher: 1
+  m_UseLightsPerObject: 1
+  m_ShadowSettings:
+    MaxDistance: 15
+    DistanceFade: 0.1
+    Directional:
+      AtlasSize: 512
+      Filter: 3
+      CascadeBlend: 0
+      CascadeCount: 2
+      CascadeRatio1: 0.3
+      CascadeRatio2: 0.4
+      CascadeRatio3: 0.5
+      CascadeFade: 0.1
+    Other:
+      AtlasSize: 1024
+      Filter: 0
+  m_PostFXSettings: {fileID: 11400000, guid: 5582a93407b18364db416ba24f78c019, type: 2}
+  m_CameraBufferSettings:
+    AllowHDR: 1
+    CopyDepth: 1
+    CopyDepthReflection: 1
+    CopyColor: 1
+    CopyColorReflection: 1
+    RenderScale: 2
+    BicubicRescalingMode: 2
+    FXAA:
+      Enable: 1
+      FixedThreshold: 0.0833
+      RelativeThreshold: 0.1906
+      SubpixelBlending: 0.446
+      Quality: 2
+  m_ColorLUTResolution: 16
