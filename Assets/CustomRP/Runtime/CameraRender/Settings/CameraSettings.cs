@@ -16,6 +16,8 @@ namespace CustomRP
 
         public bool CopyColor = true;
         
+        public bool CopyMotionVector = true;
+        
         public bool OverridePostFX = false;
 
         public PostFXSettings PostFXSettings = default;
@@ -37,9 +39,19 @@ namespace CustomRP
                 : RenderScaleMode == RenderScaleMode.Override ? RenderScale : scale * RenderScale;
         }
         
-        public bool AllowFXAA = false;
-
+        public CameraAA CameraAA = default;
+        
         public bool KeepAlpha = false;
+    }
+
+    [Serializable]
+    public struct CameraAA
+    {
+        public bool AllowFXAA;
+
+        public bool AllowTAA;
+
+        public bool AllowSMAA;
     }
     
     [Serializable]

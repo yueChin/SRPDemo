@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 namespace CustomRP
 {
     [Serializable]
-    public class CameraBufferSettings
+    public partial class CameraBufferSettings
     {
         public bool AllowHDR;
 
@@ -22,37 +22,9 @@ namespace CustomRP
 
         public BicubicRescalingMode BicubicRescalingMode;
 
-        public FXAA FXAA;
-    }
-
-    [Serializable]
-    public struct FXAA
-    {
-        public bool Enable;
-
-        [Range(0.0312f,0.0833f)]
-        public float FixedThreshold;
-
-        [Range(0.063f,0.333f)]
-        public float RelativeThreshold;
+        public bool CopyMotionVector;
         
-        [Range(0,1f)]
-        public float SubpixelBlending;
+        public bool CopyMotionVectorReflection;
 
-        public Quality Quality;
-    }
-    
-    public enum BicubicRescalingMode
-    {
-        Off,
-        UpOnly,
-        UpAndDown
-    }
-
-    public enum Quality
-    {
-        Low,
-        Medium,
-        High,
     }
 }

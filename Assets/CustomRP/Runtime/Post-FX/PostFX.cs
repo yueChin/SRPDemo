@@ -134,7 +134,7 @@ namespace CustomRP
         
             m_Buffer.SetGlobalFloat(m_FinalSrcBlendId,1f);
             m_Buffer.SetGlobalFloat(m_FinalDstBlendId,0f);
-            if (m_FXAA.Enable)
+            if (m_AA.FXAA.Enable)
             {
                 ConfigureFXAA();
                 m_Buffer.GetTemporaryRT(m_ColorGradingResultId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Bilinear,RenderTextureFormat.Default);
@@ -143,7 +143,7 @@ namespace CustomRP
         
             if (m_BufferSize.x == m_Camera.pixelWidth)
             {
-                if (m_FXAA.Enable)
+                if (m_AA.FXAA.Enable)
                 {
                     DrawFinal(m_ColorGradingResultId, m_KeepAlpha ? Pass.FXAA: Pass.FXAAWithLuma);
                     m_Buffer.ReleaseTemporaryRT(m_ColorGradingResultId);
@@ -156,7 +156,7 @@ namespace CustomRP
             else
             {
                 m_Buffer.GetTemporaryRT(m_FinalResultId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Bilinear,RenderTextureFormat.Default);
-                if (m_FXAA.Enable)
+                if (m_AA.FXAA.Enable)
                 {
                     Draw(m_ColorGradingResultId,m_FinalResultId, m_KeepAlpha ? Pass.FXAA: Pass.FXAAWithLuma);
                     m_Buffer.ReleaseTemporaryRT(m_ColorGradingResultId);
@@ -221,12 +221,12 @@ namespace CustomRP
 
         private void ConfigureFXAA()
         {
-            if (m_FXAA.Quality == Quality.Low)
+            if (m_AA.FXAA.Quality == Quality.Low)
             {
                 m_Buffer.EnableShaderKeyword(c_FXAAQualityLowKeyword);
                 m_Buffer.DisableShaderKeyword(c_FXAAQualityMediumKeyword);
             }
-            else if (m_FXAA.Quality == Quality.Medium)
+            else if (m_AA.FXAA.Quality == Quality.Medium)
             {
                 m_Buffer.EnableShaderKeyword(c_FXAAQualityMediumKeyword);
                 m_Buffer.DisableShaderKeyword(c_FXAAQualityLowKeyword);
@@ -236,7 +236,12 @@ namespace CustomRP
                 m_Buffer.DisableShaderKeyword(c_FXAAQualityLowKeyword);
                 m_Buffer.DisableShaderKeyword(c_FXAAQualityMediumKeyword);
             }
-            m_Buffer.SetGlobalVector(m_FXAAConfigId,new Vector4(m_FXAA.FixedThreshold,m_FXAA.RelativeThreshold,m_FXAA.SubpixelBlending));
+            m_Buffer.SetGlobalVector(m_FXAAConfigId,new Vector4(m_AA.FXAA.FixedThreshold,m_AA.FXAA.RelativeThreshold,m_AA.FXAA.SubpixelBlending));
+        }
+
+        private void ConfigureTAA()
+        {
+         
         }
     }
 }

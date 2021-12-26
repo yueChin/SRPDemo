@@ -7,7 +7,7 @@ using Lightmapping = UnityEngine.Experimental.GlobalIllumination.Lightmapping;
 public partial class CustomRenderPipelineAsset 
 {
 #if UNITY_EDITOR
-    private static string[] s_RenderingLayerNames;
+    private static readonly string[] s_RenderingLayerNames;
 
     static CustomRenderPipelineAsset()
     {

@@ -27,12 +27,19 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
     {
         AllowHDR = true,
         RenderScale = 1,
-        FXAA = new FXAA()
+        AA = new AA()
         {
-            FixedThreshold = 0.0833f,
-            RelativeThreshold = 0.16f,
-            SubpixelBlending = 0.75f,
-        }
+            FXAA = new FXAA()
+            {
+                FixedThreshold = 0.0833f,
+                RelativeThreshold = 0.16f,
+                SubpixelBlending = 0.75f,
+            },
+            TAA = new TAA()
+            {
+            
+            } ,
+        },
     };
 
     [SerializeField]

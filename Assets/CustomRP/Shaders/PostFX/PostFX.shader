@@ -186,7 +186,7 @@
             #pragma vertex DefaultPassVertex
             #pragma fragment FXAAPassFragment
             #pragma multi_compile _ FXAA_QUALITY_MEDIUM FAXX_QULITY_LOW
-            #include "Assets/CustomRP/Shaders/PostFX/FXAAPass.hlsl"
+            #include "Assets/CustomRP/Shaders/PostFX/AA/FXAAPass.hlsl"
             ENDHLSL
         }
         Pass
@@ -200,7 +200,7 @@
             #pragma fragment FXAAPassFragment
             #define FXAA_ALPHA_CONTAINS_LUMA
             #pragma multi_compile _ FXAA_QUALITY_MEDIUM FAXX_QULITY_LOW
-            #include "Assets/CustomRP/Shaders/PostFX/FXAAPass.hlsl"
+            #include "Assets/CustomRP/Shaders/PostFX/AA/FXAAPass.hlsl"
             ENDHLSL
         }
     }

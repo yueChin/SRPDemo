@@ -7,7 +7,7 @@ namespace CustomRP
     {
         private const string c_BufferName = "PostFX";
 
-        private CommandBuffer m_Buffer = new CommandBuffer()
+        private readonly CommandBuffer m_Buffer = new CommandBuffer()
         {
             name = c_BufferName,
         };
@@ -29,7 +29,7 @@ namespace CustomRP
         private FinalBlendMode m_FinalBlendMode;
         private BicubicRescalingMode m_BicubicRescaling;
 
-        private FXAA m_FXAA;
+        private AA m_AA;
         public PostFXStack()
         {
             m_BloomPyramidId = Shader.PropertyToID("_BloomPyramid0");
@@ -40,7 +40,7 @@ namespace CustomRP
         }
         
         public void Setup(ScriptableRenderContext content,Camera camera,Vector2Int bufferSize, PostFXSettings settings,bool keepAlpha,bool useHDR
-            ,int colorLutResolution,FinalBlendMode finalBlendMode,BicubicRescalingMode bicubicRescalingMode,FXAA fxaa)
+            ,int colorLutResolution,FinalBlendMode finalBlendMode,BicubicRescalingMode bicubicRescalingMode,AA aa)
         {
             m_Content = content;
             m_Camera = camera;
@@ -51,7 +51,7 @@ namespace CustomRP
             m_ColorLUTResolution = colorLutResolution;
             m_FinalBlendMode = finalBlendMode;
             m_BicubicRescaling = bicubicRescalingMode;
-            m_FXAA = fxaa;
+            m_AA = aa;
             ApplySceneViewState();
         }
 
@@ -72,9 +72,20 @@ namespace CustomRP
             m_Buffer.SetViewport(m_Camera.pixelRect);
             m_Buffer.DrawProcedural(Matrix4x4.identity, m_PostFXSettings.Material,(int)pass,MeshTopology.Triangles,3);
         }
+
+        public void PreRender()
+        {
+            
+        }
+
+        public void PostRender()
+        {
+            m_Camera.ResetProjectionMatrix();
+        }
         
         public void Render(int sourceId)
         {
+            
             if(DoBloom(sourceId))
             {
                 DoFinal(m_BloomResultId);

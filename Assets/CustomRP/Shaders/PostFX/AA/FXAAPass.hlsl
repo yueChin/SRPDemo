@@ -1,6 +1,8 @@
 ﻿#ifndef CUSTOM_FXAA_PASS_INCLUDED
 #define CUSTOM_FXAA_PASS_INCLUDED
 
+#include "Assets/CustomRP/Shaders/PostFX/PostFXInput.hlsl"
+
 #if defined(FXAA_QUALITY_LOW)
     #define EXTRA_EDGE_STEPS 3
     #define EDGE_STEP_SIZES 1.5, 1.5, 2.0

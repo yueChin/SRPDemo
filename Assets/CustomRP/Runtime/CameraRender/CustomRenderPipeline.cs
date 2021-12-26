@@ -41,6 +41,7 @@ public partial class CustomRenderPipeline : RenderPipeline
         {
             m_Renderer.Render(context, camera,m_UseDynamicBatching,m_UseGPUInstancing,m_UseLightPerObject,m_CameraBufferSettings,m_ShadowSettings,m_PostFXSettings,m_ColorLUTResolution);
         }
+        
     }
 
     protected override void Dispose(bool disposing)

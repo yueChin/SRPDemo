@@ -1,10 +1,17 @@
 ﻿#ifndef CUSTOM_FRAGMENT_INCLUDED
 #define CUSTOM_FRAGMENT_INCLUDED
 
-TEXTURE2D(_CameraDepthTexture);
 TEXTURE2D(_CameraColorTexture);
 
+TEXTURE2D(_CameraDepthTexture);
+float4 _CameraDepthTexture_TexelSize;
+
+TEXTURE2D(_CameraMotionVectorsTexture);
+float4 _CameraMotionVectorsTexture_TexelSize;
+
 float4 _CameraBufferSize;
+
+float4x4 _NonJitterVP;
 
 struct Fragment
 {
