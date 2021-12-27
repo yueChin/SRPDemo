@@ -14,7 +14,6 @@ float4 GetSourceTexelSize()
     return _PostFXSource_TexelSize;
 }
 
-
 float4 GetSource(float2 screenUV)
 {
     return SAMPLE_TEXTURE2D_LOD(_PostFXSource,sampler_linear_clamp,screenUV,0);

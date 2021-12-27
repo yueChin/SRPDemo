@@ -35,17 +35,22 @@ MonoBehaviour:
       Filter: 0
   m_PostFXSettings: {fileID: 11400000, guid: 5582a93407b18364db416ba24f78c019, type: 2}
   m_CameraBufferSettings:
+    AA:
+      FXAA:
+        Enable: 0
+        FixedThreshold: 0.0833
+        RelativeThreshold: 0.16
+        SubpixelBlending: 0.75
+        Quality: 0
+      TAA:
+        Enable: 0
     AllowHDR: 1
     CopyDepth: 1
     CopyDepthReflection: 1
     CopyColor: 1
     CopyColorReflection: 1
-    RenderScale: 2
+    RenderScale: 1
     BicubicRescalingMode: 2
-    FXAA:
-      Enable: 1
-      FixedThreshold: 0.0833
-      RelativeThreshold: 0.1906
-      SubpixelBlending: 0.446
-      Quality: 2
+    CopyMotionVector: 0
+    CopyMotionVectorReflection: 0
   m_ColorLUTResolution: 16

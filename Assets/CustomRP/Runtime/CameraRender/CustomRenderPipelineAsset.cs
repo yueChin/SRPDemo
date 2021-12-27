@@ -37,7 +37,10 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
             },
             TAA = new TAA()
             {
-            
+                JitterSpread = 0.75f,
+                Sharpness = 0.25f,
+                StationaryBlending = 0.95f,
+                MotionBlending = 0.85f
             } ,
         },
     };

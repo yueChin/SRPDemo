@@ -34,5 +34,26 @@
             #pragma fragment CopyDepthPassFragment
             ENDHLSL
         }
+        Pass
+        {
+            Name "Copy MotionVector"
+            Cull Off 
+            ZWrite Off 
+            ZTest Greater
+            
+            Stencil
+            {
+                Ref 0
+                comp equal
+                pass keep
+                ReadMask 128
+            }
+            
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex DefaultPassVertex
+            #pragma fragment CopyMotionVectorPassFragment
+            ENDHLSL
+        }
     }
 }

@@ -36,12 +36,12 @@ MonoBehaviour:
     Shadows: {r: 1, g: 1, b: 1, a: 1}
     Midtones: {r: 1, g: 1, b: 1, a: 1}
     Highlights: {r: 1, g: 1, b: 1, a: 1}
-    ShadowStart: 0.317
-    ShadowsEnd: 0.412
-    HighlightsStart: 0.475
-    HighlightEnd: 0.612
+    ShadowStart: 0
+    ShadowsEnd: 0
+    HighlightsStart: 0
+    HighlightEnd: 0
   m_Bloom:
-    MaxIterations: 5
+    MaxIterations: 1
     DownScaleLimit: 2
     BicubicUpsampling: 1
     Threshold: 1
@@ -49,5 +49,5 @@ MonoBehaviour:
     Intensity: 2
     FadeFireflies: 1
     Mode: 1
-    Scatter: 0.342
+    Scatter: 0.95
     IgnoreRenderScale: 0

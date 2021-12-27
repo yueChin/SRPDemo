@@ -33,7 +33,6 @@ public partial class CameraRenderer
     private static readonly int s_DepthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment");
     private static readonly int s_DepthTextureId = Shader.PropertyToID("_CameraDepthTexture");
     private static readonly int s_SourceTextureId = Shader.PropertyToID("_SourceTexture");
-    private static readonly int s_MotionVectorsAttachmentId = Shader.PropertyToID("_CameraMotionVectorsAttachment");
     private static readonly int s_MotionVectorsTextureId = Shader.PropertyToID("_CameraMotionVectorsTexture");
 
     private static readonly bool s_CopyTextureSupported = SystemInfo.copyTextureSupport > CopyTextureSupport.None;
@@ -54,7 +53,13 @@ public partial class CameraRenderer
     private static int s_BufferSizeId = Shader.PropertyToID("_CameraBufferSize");
     private Vector2Int m_BufferSize;
     
-
+    public enum CameraPass
+    {
+        Color = 0,
+        Depth,
+        MotionVector,
+    }
+    
     public CameraRenderer(Shader shader)
     {
         m_Material = CoreUtils.CreateEngineMaterial(shader);
@@ -157,11 +162,11 @@ public partial class CameraRenderer
         Submit();
     }
     
-    private void Draw(RenderTargetIdentifier form,RenderTargetIdentifier to,bool isDepth = false)
+    private void Draw(RenderTargetIdentifier form,RenderTargetIdentifier to,CameraPass pass = CameraPass.Color)
     {
         m_Buffer.SetGlobalTexture(s_SourceTextureId,form);
         m_Buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
-        m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,isDepth ? 1 : 0,MeshTopology.Triangles,3);
+        m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,(int)pass,MeshTopology.Triangles,3);
     }
     
     /// <summary>
@@ -235,12 +240,12 @@ public partial class CameraRenderer
                 flags = CameraClearFlags.Color;
             }
             
+
             m_Buffer.GetTemporaryRT(s_ColorAttachmentId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Bilinear,m_UseHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
             m_Buffer.GetTemporaryRT(s_DepthAttachmentId,m_BufferSize.x,m_BufferSize.y,32,FilterMode.Point, RenderTextureFormat.Depth);
-            m_Buffer.GetTemporaryRT(s_MotionVectorsAttachmentId,m_BufferSize.x,m_BufferSize.y,1,FilterMode.Point, RenderTextureFormat.Depth);
             m_Buffer.SetRenderTarget(s_ColorAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store
                 ,s_DepthAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
-            //m_Buffer.SetRenderTarget(s_MotionVectorsAttachmentId,s_DepthAttachmentId);
+            m_Buffer.GetTemporaryRT(s_MotionVectorsTextureId,m_BufferSize.x,m_BufferSize.y,1,FilterMode.Bilinear, RenderTextureFormat.ARGBHalf);
         }
         //设置相机清除状态
         m_Buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
@@ -250,7 +255,6 @@ public partial class CameraRenderer
         m_Buffer.SetGlobalTexture(s_DepthTextureId,m_MissingTexture);
         m_Buffer.SetGlobalTexture(s_MotionVectorsTextureId,m_MissingTexture);
         ExecuteBuffer();
-        
     }
 
     private void Cleanup()
@@ -260,7 +264,6 @@ public partial class CameraRenderer
         {
             m_Buffer.ReleaseTemporaryRT(s_ColorAttachmentId);
             m_Buffer.ReleaseTemporaryRT(s_DepthAttachmentId);
-            m_Buffer.ReleaseTemporaryRT(s_MotionVectorsAttachmentId);
             if (m_UseDepthTexture)
             {
                 m_Buffer.ReleaseTemporaryRT(s_DepthTextureId);
@@ -304,30 +307,22 @@ public partial class CameraRenderer
             }
             else
             {
-                Draw(s_DepthAttachmentId,s_DepthTextureId,true);
-               
+                Draw(s_DepthAttachmentId,s_DepthTextureId,CameraPass.Depth);
             }
         }
 
-        if (m_UseMotionVectorTexture)
-        {
-            m_Buffer.GetTemporaryRT(s_MotionVectorsTextureId,m_BufferSize.x,m_BufferSize.y,32,FilterMode.Point,RenderTextureFormat.Depth);
-            if (s_CopyTextureSupported)
-            {
-                m_Buffer.CopyTexture(s_MotionVectorsAttachmentId,s_MotionVectorsTextureId);
-            }
-            else
-            {
-                Draw(s_MotionVectorsAttachmentId,s_MotionVectorsTextureId,true);
-               
-            }
-        }
-        
         if (!s_CopyTextureSupported)
         {
             m_Buffer.SetRenderTarget(s_ColorAttachmentId,RenderBufferLoadAction.Load,RenderBufferStoreAction.Store
                 ,s_DepthAttachmentId,RenderBufferLoadAction.Load,RenderBufferStoreAction.Store);
-            m_Buffer.SetRenderTarget(s_MotionVectorsAttachmentId,s_DepthAttachmentId);
+        }
+        ExecuteBuffer();
+        
+        
+        if (m_UseMotionVectorTexture)
+        {
+            m_Buffer.SetRenderTarget(s_MotionVectorsTextureId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+            m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,(int)CameraPass.MotionVector,MeshTopology.Triangles,3);
         }
         ExecuteBuffer();
     }

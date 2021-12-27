@@ -4,14 +4,19 @@
 TEXTURE2D(_CameraColorTexture);
 
 TEXTURE2D(_CameraDepthTexture);
+SAMPLER(sampler_CameraDepthTexture);
 float4 _CameraDepthTexture_TexelSize;
 
 TEXTURE2D(_CameraMotionVectorsTexture);
+SAMPLER(sampler_CameraMotionVectorsTexture);
 float4 _CameraMotionVectorsTexture_TexelSize;
 
-float4 _CameraBufferSize;
-
 float4x4 _NonJitterVP;
+float4x4 _InvNonJitterVP;
+float4x4 _LastVp;
+float4x4 _InvLastVp;
+
+float4 _CameraBufferSize;
 
 struct Fragment
 {

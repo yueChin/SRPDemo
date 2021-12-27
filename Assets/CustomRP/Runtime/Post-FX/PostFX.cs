@@ -140,6 +140,11 @@ namespace CustomRP
                 m_Buffer.GetTemporaryRT(m_ColorGradingResultId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Bilinear,RenderTextureFormat.Default);
                 Draw(sourceId,m_ColorGradingResultId, m_KeepAlpha ? Pass.ApplyColorGrading : Pass.ApplyColorGradingWithLuma);
             }
+            else if(m_AA.TAA.Enable)
+            {
+                ConfigureTAA();
+                
+            }
         
             if (m_BufferSize.x == m_Camera.pixelWidth)
             {
