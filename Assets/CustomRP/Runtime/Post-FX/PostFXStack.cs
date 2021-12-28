@@ -20,9 +20,6 @@ namespace CustomRP
 
         public bool IsActive => m_PostFXSettings != null;
 
-        private int m_FXSourceId = Shader.PropertyToID("_PostFXSource");
-        private int m_FXSource2Id = Shader.PropertyToID("_PostFXSource2");
-
         private bool m_UseHDR, m_BicubicRescale,m_KeepAlpha;
         private int m_ColorLUTResolution;
         private Vector2Int m_BufferSize;
@@ -57,16 +54,16 @@ namespace CustomRP
 
         private void Draw(RenderTargetIdentifier from,RenderTargetIdentifier to,Pass pass)
         {
-            m_Buffer.SetGlobalTexture(m_FXSourceId,from);
+            m_Buffer.SetGlobalTexture(ShaderIds.FXSourceId,from);
             m_Buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
             m_Buffer.DrawProcedural(Matrix4x4.identity, m_PostFXSettings.Material,(int)pass,MeshTopology.Triangles,3);
         }
 
         private void DrawFinal(RenderTargetIdentifier from,Pass pass)
         {
-            m_Buffer.SetGlobalFloat(m_FinalSrcBlendId,(float)m_FinalBlendMode.Source);
-            m_Buffer.SetGlobalFloat(m_FinalDstBlendId,(float)m_FinalBlendMode.Dsesination);
-            m_Buffer.SetGlobalTexture(m_FXSourceId,from);
+            m_Buffer.SetGlobalFloat(ShaderIds.FinalSrcBlendId,(float)m_FinalBlendMode.Source);
+            m_Buffer.SetGlobalFloat(ShaderIds.FinalDstBlendId,(float)m_FinalBlendMode.Dsesination);
+            m_Buffer.SetGlobalTexture(ShaderIds.FXSourceId,from);
             m_Buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,m_FinalBlendMode.Dsesination == BlendMode.Zero
                 ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load,RenderBufferStoreAction.Store);
             m_Buffer.SetViewport(m_Camera.pixelRect);
@@ -85,15 +82,14 @@ namespace CustomRP
         
         public void Render(int sourceId)
         {
-            
             if(DoBloom(sourceId))
             {
-                DoFinal(m_BloomResultId);
-                m_Buffer.ReleaseTemporaryRT(m_BloomResultId);
+                DoFinal(ShaderIds.BloomResultId);
+                m_Buffer.ReleaseTemporaryRT(ShaderIds.BloomResultId);
             }
             else
             {
-                DoFinal(m_BloomResultId);
+                DoFinal(ShaderIds.BloomResultId);
             }
             m_Content.ExecuteCommandBuffer(m_Buffer);
             m_Buffer.Clear();

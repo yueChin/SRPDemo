@@ -6,6 +6,11 @@ namespace CustomRP.Runtime
 {
     public partial class Lighting
     {
+        private const int c_MaxDirLightCount = 4;
+
+        private static readonly Vector4[] s_DirLightColors = new Vector4[c_MaxDirLightCount];
+        private static readonly Vector4[] s_DirectionalLightDirectionsAndMasks = new Vector4[c_MaxDirLightCount];
+        
         private void SetupDirectionalLight(int index,int visibleLightIndex,ref VisibleLight visibleLight,Light light)
         {
             // Light light = RenderSettings.sun;

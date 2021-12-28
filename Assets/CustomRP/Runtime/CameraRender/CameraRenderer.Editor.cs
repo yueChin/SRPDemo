@@ -53,7 +53,7 @@ public partial class CameraRenderer
         {
             if (m_UseIntermediateBuffer)
             {
-                Draw(s_DepthAttachmentId,BuiltinRenderTextureType.CameraTarget,CameraPass.Depth);
+                Draw(ShaderIds.DepthAttachmentId,BuiltinRenderTextureType.CameraTarget,CameraPass.Depth);
                 ExecuteBuffer();
             }
             m_Content.DrawGizmos(m_Camera, GizmoSubset.PreImageEffects);

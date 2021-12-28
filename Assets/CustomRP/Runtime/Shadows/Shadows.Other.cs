@@ -5,6 +5,29 @@ namespace CustomRP.Runtime
 {
     public partial class Shadows
     {
+        private const int c_MaxShadowOtherLightCount = 16;
+
+        private int m_ShadowOtherLightCount;
+        
+        private static readonly string[] s_OtherFilterKeywords =
+        {
+            "_OTHER_PCF3",
+            "_OTHER_PCF5",
+            "_OTHER_PCF7",
+        };
+        private static readonly Matrix4x4[] s_OtherShadowMatrices = new Matrix4x4[c_MaxShadowOtherLightCount];
+        private readonly Vector4[] m_OtherShadowTiles = new Vector4[c_MaxShadowOtherLightCount];
+
+        private struct ShadowedOtherLight
+        {
+            public int VisibleLightIndex;
+            public float SlopeScaleBias;
+            public float NormalBias;
+            public bool IsPoint;
+        }
+
+        private readonly ShadowedOtherLight[] m_ShadowedOtherLights = new ShadowedOtherLight[c_MaxShadowOtherLightCount];
+        
         public Vector4 ReserveOtherShadows(Light light ,int visibleLightIndex )
         {
             if (light.shadows == LightShadows.None || light.shadowStrength <= 0f)
@@ -51,10 +74,10 @@ namespace CustomRP.Runtime
             m_AtlasSizes.z = atlasSize;
             m_AtlasSizes.w = 1f / atlasSize;
             
-            m_Buffer.GetTemporaryRT(s_OtherShadowAtlasId,atlasSize,atlasSize,32,FilterMode.Bilinear,RenderTextureFormat.Shadowmap);
-            m_Buffer.SetRenderTarget(s_OtherShadowAtlasId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+            m_Buffer.GetTemporaryRT(ShaderIds.OtherShadowAtlasId,atlasSize,atlasSize,32,FilterMode.Bilinear,RenderTextureFormat.Shadowmap);
+            m_Buffer.SetRenderTarget(ShaderIds.OtherShadowAtlasId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
             m_Buffer.ClearRenderTarget(true,false,Color.clear);
-            m_Buffer.SetGlobalFloat(s_ShadowPanckingId,0f);
+            m_Buffer.SetGlobalFloat(ShaderIds.ShadowPancakingId,0f);
             m_Buffer.BeginSample(c_BufferName);
             
             ExecuteBuffer();
@@ -75,8 +98,8 @@ namespace CustomRP.Runtime
                 }
             }
         
-            m_Buffer.SetGlobalMatrixArray(s_OtherShadowMatricesId,s_OtherShadowMatrices);
-            m_Buffer.SetGlobalVectorArray(s_OtherShadowTilesId,m_OtherShadowTiles);
+            m_Buffer.SetGlobalMatrixArray(ShaderIds.OtherShadowMatricesId,s_OtherShadowMatrices);
+            m_Buffer.SetGlobalVectorArray(ShaderIds.OtherShadowTilesId,m_OtherShadowTiles);
             SetKeywords(s_OtherFilterKeywords,(int)m_Settings.Other.Filter - 1);
             
             m_Buffer.EndSample(c_BufferName);

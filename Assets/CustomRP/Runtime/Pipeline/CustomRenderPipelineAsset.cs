@@ -40,7 +40,9 @@ public partial class CustomRenderPipelineAsset : RenderPipelineAsset
                 JitterSpread = 0.75f,
                 Sharpness = 0.25f,
                 StationaryBlending = 0.95f,
-                MotionBlending = 0.85f
+                MotionBlending = 0.85f,
+                StationaryAABBScale = 1.25f,
+                MotionAABBScale = 0.5f,
             } ,
         },
     };

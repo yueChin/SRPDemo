@@ -44,6 +44,10 @@ MonoBehaviour:
         Quality: 0
       TAA:
         Enable: 0
+        JitterSpread: 0
+        Sharpness: 0
+        StationaryBlending: 0
+        MotionBlending: 0
     AllowHDR: 1
     CopyDepth: 1
     CopyDepthReflection: 1
@@ -51,6 +55,6 @@ MonoBehaviour:
     CopyColorReflection: 1
     RenderScale: 1
     BicubicRescalingMode: 2
-    CopyMotionVector: 0
+    CopyMotionVector: 1
     CopyMotionVectorReflection: 0
   m_ColorLUTResolution: 16

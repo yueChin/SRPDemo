@@ -5,6 +5,15 @@ namespace CustomRP.Runtime
 {
     public partial class Lighting 
     {
+        private const int c_MaxOtherLightCount = 64;
+
+        private static readonly Vector4[] s_OtherLightColors = new Vector4[c_MaxOtherLightCount];
+        private static readonly Vector4[] s_OtherLightPositions = new Vector4[c_MaxOtherLightCount];
+        //private static Vector4[] s_OtherLightDirecitons = new Vector4[c_MaxOtherLightCount];
+        private static readonly Vector4[] s_OtherLightDirectionsAndMask = new Vector4[c_MaxOtherLightCount];
+        private static readonly Vector4[] s_OtherLightSpotAngles = new Vector4[c_MaxOtherLightCount];
+        private static readonly Vector4[] s_OtherLightShadowData = new Vector4[c_MaxOtherLightCount];
+        
         private void SetupPointLight(int index,int visibleLightIndex,ref VisibleLight visibleLight,Light light)
         {
             s_OtherLightColors[index] = visibleLight.finalColor;

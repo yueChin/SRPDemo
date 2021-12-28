@@ -4,17 +4,16 @@
 #include "Assets/CustomRP/Shaders/PostFX/PostFXInput.hlsl"
 #include "Assets/CustomRP/ShaderLibrary/UnityPostFXXRLib.hlsl"
 #include "Assets/CustomRP/ShaderLibrary/Fragment.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 
 TEXTURE2D(_HistoryTex);
 SAMPLER(sampler_HistoryTex);
 
-Texture2D<float> _LastFrameDepthTexture;
-SamplerState sampler_LastFrameDepthTexture;
+TEXTURE2D(_LastFrameDepthTexture);
+SAMPLER(sampler_LastFrameDepthTexture);
 
-// TEXTURE2D(_LastFrameDepthTexture);
-// SAMPLER(sampler_LastFrameDepthTexture);
-
-Texture2D<float2> _LastFrameMotionVectors; SamplerState sampler_LastFrameMotionVectors;
+TEXTURE2D(_LastFrameMotionVectors);
+SAMPLER(sampler_LastFrameMotionVectors);
 float3 _TemporalClipBounding;
 
 float2 _Jitter;
@@ -70,18 +69,18 @@ float Luma4(float3 Color)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-float3 RGBToYCoCg(float3 RGB)
-{
-    const float3x3 mat = float3x3(0.25,0.5,0.25,0.5,0,-0.5,-0.25,0.5,-0.25);
-    float3 col =mul(mat, RGB);
-    return col;
-}
-
-float3 YCoCgToRGB(float3 YCoCg)
-{
-    const float3x3 mat = float3x3(1,1,-1,1,0,1,1,-1,-1);
-    return mul(mat, YCoCg);
-}
+// float3 RGBToYCoCg(float3 RGB)
+// {
+//     const float3x3 mat = float3x3(0.25,0.5,0.25,0.5,0,-0.5,-0.25,0.5,-0.25);
+//     float3 col =mul(mat, RGB);
+//     return col;
+// }
+//
+// float3 YCoCgToRGB(float3 YCoCg)
+// {
+//     const float3x3 mat = float3x3(1,1,-1,1,0,1,1,-1,-1);
+//     return mul(mat, YCoCg);
+// }
 
 float4 RGBToYCoCg(float4 RGB)
 {

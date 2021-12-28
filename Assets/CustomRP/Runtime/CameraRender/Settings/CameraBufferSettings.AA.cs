@@ -54,6 +54,14 @@ namespace CustomRP
         [Tooltip("具有显著运动的碎片的混合系数。控制混合到最终颜色中的历史样本的百分比。")]
         [Range(0f, 0.99f)]
         public float MotionBlending;
+        
+        [Tooltip("静止状态的屏幕空间AABB边界(越大，占用空间越少，但重影越多)")]
+        [Range(0.05f, 6f)]
+        public float StationaryAABBScale ;
+        
+        [Tooltip("运动状态的屏幕空间AABB边界(越大，烧瓶占用的空间越少，但重影越多)")]
+        [Range(0.05f, 6f)]
+        public float MotionAABBScale ;
     }
     
     public enum BicubicRescalingMode

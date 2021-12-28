@@ -7,7 +7,7 @@ namespace CustomRP.Runtime
     {
         private const string c_BufferName = "Shadows";
 
-        private CommandBuffer m_Buffer = new CommandBuffer()
+        private readonly CommandBuffer m_Buffer = new CommandBuffer()
         {
             name = c_BufferName,
         };
@@ -20,11 +20,13 @@ namespace CustomRP.Runtime
 
         private Vector4 m_AtlasSizes;
 
-        private static int s_ShadowDistanceId = Shader.PropertyToID("_ShadowDistance");
-        private static int s_ShadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
-        private static int s_ShadowPanckingId = Shader.PropertyToID("_ShadowPancaking");
-        private static int s_ShadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize");
-
+        
+        private bool m_UseShadowMask = false;
+        private static readonly string[] s_ShadowMaskKeywords =
+        {
+            "_SHADOW_MASK_ALWAYS",
+            "_SHADOW_MASK_DISTANCE",
+        };
         
         public void SetUp(ScriptableRenderContext content,CullingResults results,ShadowSettings settings)
         {
@@ -58,7 +60,7 @@ namespace CustomRP.Runtime
             }
             else
             {
-                m_Buffer.GetTemporaryRT(s_DireShadowAtlasId, 1, 1, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+                m_Buffer.GetTemporaryRT(ShaderIds.DireShadowAtlasId, 1, 1, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
             }
 
             if (m_ShadowOtherLightCount > 0)
@@ -67,16 +69,16 @@ namespace CustomRP.Runtime
             }
             else
             {
-                m_Buffer.SetGlobalTexture(s_OtherShadowAtlasId, s_DireShadowAtlasId);
+                m_Buffer.SetGlobalTexture(ShaderIds.OtherShadowAtlasId, ShaderIds.DireShadowAtlasId);
             }
             
             m_Buffer.BeginSample(c_BufferName);
-            SetKeywords(s_ShodowMaskKeywords,m_UseShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
-            m_Buffer.SetGlobalInt(s_CascadeCountId,m_ShadowedDirectionalLightCount > 0 ? m_Settings.Directional.CascadeCount:0);
+            SetKeywords(s_ShadowMaskKeywords,m_UseShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
+            m_Buffer.SetGlobalInt(ShaderIds.CascadeCountId,m_ShadowedDirectionalLightCount > 0 ? m_Settings.Directional.CascadeCount:0);
             float f = 1f - m_Settings.Directional.CascadeFade;
-            m_Buffer.SetGlobalVector(s_ShadowDistanceFadeId,new Vector4(1f/m_Settings.MaxDistance,1f/m_Settings.DistanceFade,1f / (1f - f*f)));
+            m_Buffer.SetGlobalVector(ShaderIds.ShadowDistanceFadeId,new Vector4(1f/m_Settings.MaxDistance,1f/m_Settings.DistanceFade,1f / (1f - f*f)));
             
-            m_Buffer.SetGlobalVector(s_ShadowAtlasSizeId,m_AtlasSizes);
+            m_Buffer.SetGlobalVector(ShaderIds.ShadowAtlasSizeId,m_AtlasSizes);
             m_Buffer.EndSample(c_BufferName);
             ExecuteBuffer();
             
@@ -84,17 +86,17 @@ namespace CustomRP.Runtime
 
         public void Cleanup()
         {
-            m_Buffer.ReleaseTemporaryRT(s_DireShadowAtlasId);
+            m_Buffer.ReleaseTemporaryRT(ShaderIds.DireShadowAtlasId);
             if (m_ShadowOtherLightCount > 0)
             {
-                m_Buffer.ReleaseTemporaryRT(s_OtherShadowAtlasId);
+                m_Buffer.ReleaseTemporaryRT(ShaderIds.OtherShadowAtlasId);
             }
             ExecuteBuffer();
         }
 
         // private void RenderDirectionalShadows()
         // {
-        //     m_Buffer.SetGlobalVectorArray(s_CascadeCountId,s_CascadeData);
+        //     m_Buffer.SetGlobalVectorArray(ShaderIds.CascadeCountId,s_CascadeData);
         //     m_Buffer.SetGlobalMatrixArray(s_DirShadowMatricesId,s_DirShadowMatrices);
         // }
         

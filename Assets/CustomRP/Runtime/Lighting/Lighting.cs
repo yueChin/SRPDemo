@@ -8,7 +8,7 @@ namespace CustomRP.Runtime
     {
         private const string m_BufferName = "Lighting";
 
-        private CommandBuffer m_Buffer = new CommandBuffer()
+        private readonly CommandBuffer m_Buffer = new CommandBuffer()
         {
             name = m_BufferName,
         };
@@ -16,6 +16,9 @@ namespace CustomRP.Runtime
         private CullingResults m_CullingResults;
 
         private static string s_LightsPerObjectKeyword = "_LIGHTS_PER_OBJECT";
+        
+        private readonly Shadows m_Shadows = new Shadows();
+        private static readonly Vector4[] s_DirLightShadowData = new Vector4[c_MaxDirLightCount];
         
         public void Setup(ScriptableRenderContext content,CullingResults cullingResults,ShadowSettings shadowSettings,bool useLightsPerObject,int renderingLayerMask)
         {
@@ -103,22 +106,22 @@ namespace CustomRP.Runtime
                 Shader.DisableKeyword(s_LightsPerObjectKeyword);
             }
             
-            m_Buffer.SetGlobalInt(s_DirLightCountId,dirLightCount);
+            m_Buffer.SetGlobalInt(ShaderIds.DirLightCountId,dirLightCount);
             if (dirLightCount > 0)
             {
-                m_Buffer.SetGlobalVectorArray(s_DirLightColorsId,s_DirLightColors);
-                m_Buffer.SetGlobalVectorArray(s_DirLightDirectionsId,s_DirectionalLightDirectionsAndMasks);
-                m_Buffer.SetGlobalVectorArray(s_DireLIghtShadowDataId,s_DirLightShadowData);
+                m_Buffer.SetGlobalVectorArray(ShaderIds.DirLightColorsId,s_DirLightColors);
+                m_Buffer.SetGlobalVectorArray(ShaderIds.DirLightDirectionsId,s_DirectionalLightDirectionsAndMasks);
+                m_Buffer.SetGlobalVectorArray(ShaderIds.DireLightShadowDataId,s_DirLightShadowData);
             }
 
-            m_Buffer.SetGlobalInt(s_OtherLightCountId,otherLightCount);
+            m_Buffer.SetGlobalInt(ShaderIds.OtherLightCountId,otherLightCount);
             if (otherLightCount > 0)
             {
-                m_Buffer.SetGlobalVectorArray(s_OtherLightColorsId,s_OtherLightColors);
-                m_Buffer.SetGlobalVectorArray(s_OtherLightPositionsId,s_OtherLightPositions);
-                m_Buffer.SetGlobalVectorArray(s_OtherLightDirectionsAndMaskId,s_OtherLightDirectionsAndMask);
-                m_Buffer.SetGlobalVectorArray(s_OtherLightSpotAnglesId,s_OtherLightSpotAngles);
-                m_Buffer.SetGlobalVectorArray(s_OtherLightShadowDataId,s_OtherLightShadowData);
+                m_Buffer.SetGlobalVectorArray(ShaderIds.OtherLightColorsId,s_OtherLightColors);
+                m_Buffer.SetGlobalVectorArray(ShaderIds.OtherLightPositionsId,s_OtherLightPositions);
+                m_Buffer.SetGlobalVectorArray(ShaderIds.OtherLightDirectionsAndMaskId,s_OtherLightDirectionsAndMask);
+                m_Buffer.SetGlobalVectorArray(ShaderIds.OtherLightSpotAnglesId,s_OtherLightSpotAngles);
+                m_Buffer.SetGlobalVectorArray(ShaderIds.OtherLightShadowDataId,s_OtherLightShadowData);
             }
         }
 
