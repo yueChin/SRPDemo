@@ -44,9 +44,10 @@ public partial class CameraRenderer
 
     private readonly Texture2D m_MissingTexture;
 
-    private static int s_BufferSizeId = Shader.PropertyToID("_CameraBufferSize");
+    private static readonly int s_BufferSizeId = Shader.PropertyToID("_CameraBufferSize");
     private Vector2Int m_BufferSize;
-    
+
+    private readonly CameraProperty m_CameraProperty = new CameraProperty();
     public enum CameraPass
     {
         Color = 0,
@@ -100,7 +101,6 @@ public partial class CameraRenderer
         // 在Game视图绘制的几何体也绘制到Scene视图中
         PrepareForSceneWindow();
 
-        PreCull();
         if (!Cull(shadowSettings.MaxDistance))
         {
             return;
@@ -118,6 +118,8 @@ public partial class CameraRenderer
             m_BufferSize.x = m_Camera.pixelWidth;
             m_BufferSize.y = m_Camera.pixelHeight;
         }
+
+        PreDraw();
         
         m_Buffer.BeginSample(SampleName);
         m_Buffer.SetGlobalVector(s_BufferSizeId,new Vector4(1f / m_BufferSize.x,1f / m_BufferSize.y,m_BufferSize.x,m_BufferSize.y));
@@ -125,7 +127,7 @@ public partial class CameraRenderer
         m_Lighting.Setup(content,m_CullingResults,shadowSettings,useLightsPerObject,cameraSettings.MaskLights ? cameraSettings.RenderingLayerMask : -1);
         
         //cameraBufferSettings.FXAA.Enable &= cameraSettings.AllowFXAA;
-        m_PostFXStack.Setup(content,camera,m_BufferSize,postFXSettings,cameraSettings.KeepAlpha,m_UseHDR,colorLutResolution
+        m_PostFXStack.Setup(content,camera,m_CameraProperty,m_BufferSize,postFXSettings,cameraSettings.KeepAlpha,m_UseHDR,colorLutResolution
             ,cameraSettings.FinalBlendMode,cameraBufferSettings.BicubicRescalingMode,cameraBufferSettings.AA);
         
         m_Buffer.EndSample(SampleName);
@@ -154,6 +156,11 @@ public partial class CameraRenderer
         Cleanup();
         //提交命令缓冲区
         Submit();
+    }
+
+    private void PreDraw()
+    {
+        m_PostFXStack.PreDrawTAA();
     }
     
     private void Draw(RenderTargetIdentifier form,RenderTargetIdentifier to,CameraPass pass = CameraPass.Color)
@@ -334,7 +341,7 @@ public partial class CameraRenderer
     /// 剔除
     /// </summary>
     /// <returns></returns>
-    private bool Cull(float  maxShadowDistance)
+    private bool Cull(float maxShadowDistance)
     {
         ScriptableCullingParameters p;
 
@@ -342,56 +349,12 @@ public partial class CameraRenderer
         {
             p.shadowDistance = Mathf.Min(maxShadowDistance, m_Camera.farClipPlane);
             m_CullingResults = m_Content.Cull(ref p);
+            m_CameraProperty.PreRender(m_Camera,float3.zero);
             return true;
         }
         return false;
     }
 
-    private void PreCull()
-    {
-        // Matrix4x4 proj = m_Camera.projectionMatrix;
-        // m_Camera.nonJitteredProjectionMatrix = proj;
-        // m_FrameCount++;
-        // int index = m_FrameCount % 8;
-        // m_JitterVector2 = new Vector2((m_HaltonSequences[index].x - 0.5f) / m_Camera.pixelWidth
-        //     , (m_HaltonSequences[index].y - 0.5f) / m_Camera.pixelHeight);
-        // proj.m02 += m_JitterVector2.x * 2;
-        // proj.m12 += m_JitterVector2.y * 2;
-        // m_Camera.projectionMatrix = proj;
-        
-        
-        float4x4 lastP = GraphicsUtility.GetGPUProjectionMatrix(m_Camera.projectionMatrix, false);
-        float4x4 camLocalToWorld = m_Camera.transform.localToWorldMatrix;
-        float4x4 nonJitterP = m_Camera.nonJitteredProjectionMatrix;
-        float4x4 lastVP = mul(lastP, m_Camera.worldToCameraMatrix);
-        float4x4 worldToView = m_Camera.worldToCameraMatrix;
-        float4x4 nonJitterPNoTex = GraphicsUtility.GetGPUProjectionMatrix(nonJitterP, false, false);
-        float4x4 nonJitterVP = mul(nonJitterPNoTex, worldToView);
-        float4x4 nonJitterInverseVP = inverse(nonJitterVP);
-        float4x4 nonJitterTextureVP = mul(GraphicsUtility.GetGPUProjectionMatrix(nonJitterP, true, false), worldToView);
-        float4x4 lastCameraLocalToWorld = camLocalToWorld;
-        float3 sceneOffset = float3.zero;
-        lastCameraLocalToWorld.c3.xyz += sceneOffset;
-        float4x4 lastV = GetWorldToCamera(ref lastCameraLocalToWorld);
-        lastVP = mul(lastP, lastV);
-        lastP = nonJitterPNoTex;
-        float4x4 lastInverseVP = inverse(lastVP);
-        
-        float4x4 lastViewProjection = lastVP;
-        float4x4 inverseLastViewProjection = lastInverseVP;
-    }
-
-    private static float4x4 GetWorldToCamera(ref float4x4 localToWorldMatrix)
-    {
-        float4x4 worldToCameraMatrix = MathLib.GetWorldToLocal(ref localToWorldMatrix);
-        float4 row2 = -float4(worldToCameraMatrix.c0.z, worldToCameraMatrix.c1.z, worldToCameraMatrix.c2.z, worldToCameraMatrix.c3.z);
-        worldToCameraMatrix.c0.z = row2.x;
-        worldToCameraMatrix.c1.z = row2.y;
-        worldToCameraMatrix.c2.z = row2.z;
-        worldToCameraMatrix.c3.z = row2.w;
-        return worldToCameraMatrix;
-    }
-    
     public void Dispose()
     {
         CoreUtils.Destroy(m_Material);

@@ -6,6 +6,33 @@ namespace CustomRP
 {
     public partial class PostFXStack
     {
+        
+        private readonly int m_BloomPyramidId;
+        
+        private int c_MaxBloomPyramidLevel = 16;
+
+        private enum Pass
+        {
+            BloomHorizontal,
+            BloomVertical,
+            BloomAdd,
+            BloomScatter,
+            BloomScatterFinal,
+            BloomPrefilter,
+            BloomPrefilterFireFlies,
+            Copy,
+            ColorGradingNone,
+            ColorGradingASCS,
+            ColorGradingNeutral,
+            ColorGradingReinhard,
+            ApplyColorGrading,
+            ApplyColorGradingWithLuma,
+            FinalRescale,
+            FXAA,
+            FXAAWithLuma,
+            TAA,
+        }
+        
         private bool DoBloom(int sourceId)
         {
             BloomSettings bloom = m_PostFXSettings.Bloom;
@@ -131,16 +158,18 @@ namespace CustomRP
         
             m_Buffer.SetGlobalFloat(ShaderIds.FinalSrcBlendId,1f);
             m_Buffer.SetGlobalFloat(ShaderIds.FinalDstBlendId,0f);
-            if (m_AA.FXAA.Enable)
+            if (m_AA.FXAA.Enable || m_AA.TAA.Enable)
             {
-                ConfigureFXAA();
+                if (m_AA.FXAA.Enable)
+                {
+                    ConfigureFXAA();
+                }
+                else if(m_AA.TAA.Enable)
+                {
+                    ConfigureTAA();
+                }
                 m_Buffer.GetTemporaryRT(ShaderIds.ColorGradingResultId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Bilinear,RenderTextureFormat.Default);
                 Draw(sourceId,ShaderIds.ColorGradingResultId, m_KeepAlpha ? Pass.ApplyColorGrading : Pass.ApplyColorGradingWithLuma);
-            }
-            else if(m_AA.TAA.Enable)
-            {
-                ConfigureTAA();
-                
             }
         
             if (m_BufferSize.x == m_Camera.pixelWidth)
@@ -149,6 +178,13 @@ namespace CustomRP
                 {
                     DrawFinal(ShaderIds.ColorGradingResultId, m_KeepAlpha ? Pass.FXAA: Pass.FXAAWithLuma);
                     m_Buffer.ReleaseTemporaryRT(ShaderIds.ColorGradingResultId);
+                }
+                else if (m_AA.TAA.Enable)
+                {
+                    DrawFinal(ShaderIds.ColorGradingResultId, Pass.TAA,ShaderIds.DepthAttachmentId);
+                    AfterDrawTAA();
+                    m_Buffer.ReleaseTemporaryRT(ShaderIds.ColorGradingResultId);
+                    
                 }
                 else
                 {
@@ -161,6 +197,12 @@ namespace CustomRP
                 if (m_AA.FXAA.Enable)
                 {
                     Draw(ShaderIds.ColorGradingResultId,ShaderIds.FinalResultId, m_KeepAlpha ? Pass.FXAA: Pass.FXAAWithLuma);
+                    m_Buffer.ReleaseTemporaryRT(ShaderIds.ColorGradingResultId);
+                }
+                else if (m_AA.TAA.Enable)
+                {
+                    Draw(ShaderIds.ColorGradingResultId,ShaderIds.FinalResultId, Pass.TAA,ShaderIds.DepthAttachmentId);
+                    AfterDrawTAA();
                     m_Buffer.ReleaseTemporaryRT(ShaderIds.ColorGradingResultId);
                 }
                 else

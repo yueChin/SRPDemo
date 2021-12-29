@@ -20,7 +20,7 @@ MonoBehaviour:
   m_UseLightsPerObject: 1
   m_ShadowSettings:
     MaxDistance: 15
-    DistanceFade: 0.1
+    DistanceFade: 0.056
     Directional:
       AtlasSize: 512
       Filter: 3
@@ -48,6 +48,8 @@ MonoBehaviour:
         Sharpness: 0
         StationaryBlending: 0
         MotionBlending: 0
+        StationaryAABBScale: 0
+        MotionAABBScale: 0
     AllowHDR: 1
     CopyDepth: 1
     CopyDepthReflection: 1

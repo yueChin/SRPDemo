@@ -40,5 +40,14 @@ public static partial class ShaderIds
     public static readonly int CopyBicubicId = Shader.PropertyToID("_CopyBicubic");
 
     public static readonly int FXAAConfigId = Shader.PropertyToID("_FXAAConfig");
+    
+    public static readonly int JitterId = Shader.PropertyToID("_Jitter");
+    public static readonly int LastJitterId = Shader.PropertyToID("_LastJitter");
+    public static readonly int SharpnessId = Shader.PropertyToID("_Sharpness");
+    public static readonly int FinalBlendParametersId = Shader.PropertyToID("_FinalBlendParameters");
+    public static readonly int HistoryTextureId = Shader.PropertyToID("_HistoryTex");
+    public static readonly int TextureSizeId = Shader.PropertyToID("_TextureSize");
+    public static readonly int TargetElementId = Shader.PropertyToID("_TargetElement");
+    public static readonly int TextureBufferId = Shader.PropertyToID("_TextureBuffer");
 
 }

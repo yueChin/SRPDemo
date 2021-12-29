@@ -8,61 +8,77 @@ namespace CustomRP
     {
         private int m_SampleIndex = 0;
         private const int c_SampleCount = 8;
-        private void ConfigureTAA()
-        {
-            // texComponent.UpdateProperty(cam);
-            // SetHistory(cam.cam, m_Buffer, ref texComponent.historyTex, cam.targets.renderTargetIdentifier);
-            // RenderTexture historyTex = texComponent.historyTex;
-            // //TAA Start
-            // const float kMotionAmplification_Blending = 100f * 60f;
-            // const float kMotionAmplification_Bounding = 100f * 30f;
-            // m_Buffer.SetGlobalFloat(ShaderIDs._Sharpness, sharpness);
-            //
-            // m_Buffer.SetGlobalVector(ShaderIDs._TemporalClipBounding, new Vector4(stationaryAABBScale, motionAABBScale, kMotionAmplification_Bounding, 0f));
-            // m_Buffer.SetGlobalVector(ShaderIDs._FinalBlendParameters, new Vector4(stationaryBlending, motionBlending, kMotionAmplification_Blending, 0f));
-            // m_Buffer.SetGlobalTexture(ShaderIDs._HistoryTex, historyTex);
-            // m_Buffer.SetGlobalTexture(ShaderIDs._LastFrameDepthTexture, prevDepthData.SSR_PrevDepth_RT);
-            // m_Buffer.SetGlobalTexture(ShaderIDs._LastFrameMotionVectors, texComponent.historyMV);
-            // m_Buffer.SetGlobalMatrix(ShaderIDs._InvLastVp, proper.inverseLastViewProjection);
-            // RenderTargetIdentifier source, dest;
-            // PipelineFunctions.RunPostProcess(ref cam.targets, out source, out dest);
-            // m_Buffer.BlitSRT(source, dest, ShaderIDs._DepthBufferTexture, taaMat, 0);
-            // m_Buffer.CopyTexture(dest, historyTex);
-            // m_Buffer.CopyTexture(ShaderIDs._CameraMotionVectorsTexture, texComponent.historyMV);
-            // prevDepthData.UpdateCameraSize(new Vector2Int(cam.cam.pixelWidth, cam.cam.pixelHeight));
-            // m_Buffer.CopyTexture(ShaderIDs._CameraDepthTexture, 0, 0, prevDepthData.SSR_PrevDepth_RT, 0, 0);
-        }
+        private RenderTexture m_HistoryTextures;
+        private RenderTexture m_HistoryMotionVectorTextures;
+        private Vector2 m_Jitter;
 
-        
-        public void ConfigureJitteredProjectionMatrix(Camera camera, ref Vector2 jitter)
+        public void PreDrawTAA()
         {
-            camera.nonJitteredProjectionMatrix = camera.projectionMatrix;
-            camera.projectionMatrix = GetJitteredProjectionMatrix(camera, ref jitter);
-            camera.useJitteredProjectionMatrixForTransparentRendering = false;
-        }
-        
-        public Matrix4x4 GetJitteredProjectionMatrix(Camera camera, ref Vector2 jitter)
-        {
-            jitter = GenerateRandomOffset();
-            jitter *= m_AA.TAA.JitterSpread;
-            Matrix4x4 cameraProj = camera.orthographic
-                ? RuntimeUtilities.GetJitteredOrthographicProjectionMatrix(camera, jitter)
-                : RuntimeUtilities.GetJitteredPerspectiveProjectionMatrix(camera, jitter);
-            jitter = new Vector2(jitter.x / camera.pixelWidth, jitter.y / camera.pixelHeight);
-            return cameraProj;
-        }
-
-        Vector2 GenerateRandomOffset()
-        {
-            Vector2 offset = new Vector2(HaltonSeq.Get((m_SampleIndex & 1023) + 1, 2) - 0.5f
-                , HaltonSeq.Get((m_SampleIndex & 1023) + 1, 3) - 0.5f);
-
+            m_Buffer.SetGlobalVector(ShaderIds.LastJitterId, m_Jitter);
+            m_Camera.ResetProjectionMatrix();
+            m_Camera.nonJitteredProjectionMatrix = m_Camera.projectionMatrix;
+            m_Jitter = new Vector2(HaltonSeq.Get((m_SampleIndex & 1023) + 1, 2) - 0.5f, HaltonSeq.Get((m_SampleIndex & 1023) + 1, 3) - 0.5f);
             if (++m_SampleIndex >= c_SampleCount)
             {
                 m_SampleIndex = 0;
             }
+            m_Jitter *= m_AA.TAA.JitterSpread;
+            Matrix4x4 cameraProj = m_Camera.orthographic
+                ? RuntimeUtilities.GetJitteredOrthographicProjectionMatrix(m_Camera, m_Jitter)
+                : RuntimeUtilities.GetJitteredPerspectiveProjectionMatrix(m_Camera, m_Jitter);
+            m_Jitter = new Vector2(m_Jitter.x / m_BufferSize.x, m_Jitter.y / m_BufferSize.y);
+            m_Camera.projectionMatrix = cameraProj;
+            m_Camera.useJitteredProjectionMatrixForTransparentRendering = false;
+            m_Buffer.SetGlobalVector(ShaderIds.JitterId,m_Jitter);
+        }
+        
+        private void ConfigureTAA()
+        {
+            SetHistoryTexture();
+            //TAA Start
+            const float kMotionAmplification_Blending = 100f * 60f;
+            const float kMotionAmplification_Bounding = 100f * 30f;
+            m_Buffer.SetGlobalFloat(ShaderIds.SharpnessId, m_AA.TAA.Sharpness);
+            
+            m_Buffer.SetGlobalVector(ShaderIds.TemporalClipBoundingId, new Vector4(m_AA.TAA.StationaryAABBScale, m_AA.TAA.MotionAABBScale, kMotionAmplification_Bounding, 0f));
+            m_Buffer.SetGlobalVector(ShaderIds.FinalBlendParametersId, new Vector4(m_AA.TAA.StationaryBlending, m_AA.TAA.MotionBlending, kMotionAmplification_Blending, 0f));
+            m_Buffer.SetGlobalTexture(ShaderIds.HistoryTextureId, m_HistoryTextures);
+            //m_Buffer.SetGlobalTexture(ShaderIds.LastFrameDepthTextureId, prevDepthData.SSR_PrevDepth_RT);
+            m_Buffer.SetGlobalTexture(ShaderIds.LastFrameMotionVectorsId, m_HistoryMotionVectorTextures);
+            m_Buffer.SetGlobalMatrix(ShaderIds.InvLastVPId, m_CameraProperty.LastInverseVP);
+        }
 
-            return offset;
+        private void AfterDrawTAA()
+        {
+            m_Buffer.CopyTexture(BuiltinRenderTextureType.CameraTarget, m_HistoryTextures);
+            m_Buffer.CopyTexture(ShaderIds.MotionVectorsTextureId, m_HistoryMotionVectorTextures);
+            //m_Buffer.CopyTexture(ShaderIds.DepthTextureId, 0, 0, prevDepthData.SSR_PrevDepth_RT, 0, 0);
+        }
+        
+        private void SetHistoryTexture()
+        {
+            if (m_HistoryTextures == null)
+            {
+                m_HistoryTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y,0,RenderTextureFormat.ARGBHalf, 0)
+                {
+                    filterMode = FilterMode.Bilinear,
+                    bindTextureMS = false,
+                    antiAliasing = 1
+                };
+                m_Buffer.CopyTexture(ShaderIds.HistoryTextureId, m_HistoryTextures);
+            }
+            else if (m_HistoryTextures.width != m_BufferSize.x || m_HistoryTextures.height != m_BufferSize.y)
+            {
+                m_HistoryTextures.Release();
+                CoreUtils.Destroy(m_HistoryTextures);
+                m_HistoryTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, RenderTextureFormat.ARGBHalf, 0)
+                {
+                    filterMode = FilterMode.Bilinear,
+                    bindTextureMS = false,
+                    antiAliasing = 1
+                };
+                m_Buffer.CopyTexture(ShaderIds.HistoryTextureId, m_HistoryTextures);
+            }
         }
     }
 }

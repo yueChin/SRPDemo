@@ -42,7 +42,7 @@ MonoBehaviour:
     HighlightEnd: 0
   m_Bloom:
     MaxIterations: 1
-    DownScaleLimit: 2
+    DownScaleLimit: 21
     BicubicUpsampling: 1
     Threshold: 1
     ThresholdKnee: 1
