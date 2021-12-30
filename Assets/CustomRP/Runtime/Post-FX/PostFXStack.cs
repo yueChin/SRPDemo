@@ -55,6 +55,21 @@ namespace CustomRP
             ApplySceneViewState();
         }
 
+        public void Render(int sourceId)
+        {
+            if(DoBloom(sourceId))
+            {
+                DoFinal(ShaderIds.BloomResultId);
+                m_Buffer.ReleaseTemporaryRT(ShaderIds.BloomResultId);
+            }
+            else
+            {
+                DoFinal(ShaderIds.BloomResultId);
+            }
+            m_Content.ExecuteCommandBuffer(m_Buffer);
+            m_Buffer.Clear();
+        }
+        
         private void Draw(RenderTargetIdentifier from,RenderTargetIdentifier to,Pass pass,RenderTargetIdentifier depth = default)
         {
             m_Buffer.SetGlobalTexture(ShaderIds.FXSourceId,from);
@@ -89,29 +104,20 @@ namespace CustomRP
 
         public void PreRender()
         {
-            
+            if (m_AA.TAA.Enable)
+            {
+                PreDrawTAA();
+            }
         }
 
         public void PostRender()
         {
-            m_Camera.ResetProjectionMatrix();
+            if (m_AA.TAA.Enable)
+            {
+                PostDrawTAA();
+            }
         }
         
-        public void Render(int sourceId)
-        {
-            if(DoBloom(sourceId))
-            {
-                DoFinal(ShaderIds.BloomResultId);
-                m_Buffer.ReleaseTemporaryRT(ShaderIds.BloomResultId);
-            }
-            else
-            {
-                DoFinal(ShaderIds.BloomResultId);
-            }
-            m_Content.ExecuteCommandBuffer(m_Buffer);
-            m_Buffer.Clear();
-        }
-
         partial void ApplySceneViewState();
     }
 }

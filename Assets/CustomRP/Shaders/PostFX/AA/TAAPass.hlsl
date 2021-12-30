@@ -236,7 +236,7 @@ Neighborhood GetWeightAndFiltered(float2 uv,float4 mc,float scale)
     return neighborhood;
 }
 
-float4 Solver_CGBullTAA(v2f i) : SV_TARGET0
+float4 TAAPassFragment(v2f i) : SV_TARGET0
 {
     const float ExposureScale = 10;
     float2 uv = (i.texcoord - _Jitter);

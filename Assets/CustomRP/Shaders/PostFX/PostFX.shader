@@ -203,5 +203,17 @@
             #include "Assets/CustomRP/Shaders/PostFX/AA/FXAAPass.hlsl"
             ENDHLSL
         }
+        Pass
+        {
+            Name "TAA"
+            
+            Blend [_FinalSrcBlend] [_FinalDstBlend]
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex DefaultPassVertex
+            #pragma fragment TAAPassFragment
+            #include "Assets/CustomRP/Shaders/PostFX/AA/TAAPass.hlsl"
+            ENDHLSL
+        }
     }
 }

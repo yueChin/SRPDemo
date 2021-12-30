@@ -119,8 +119,6 @@ public partial class CameraRenderer
             m_BufferSize.y = m_Camera.pixelHeight;
         }
 
-        PreDraw();
-        
         m_Buffer.BeginSample(SampleName);
         m_Buffer.SetGlobalVector(s_BufferSizeId,new Vector4(1f / m_BufferSize.x,1f / m_BufferSize.y,m_BufferSize.x,m_BufferSize.y));
         ExecuteBuffer();
@@ -148,6 +146,7 @@ public partial class CameraRenderer
         }
         else if (m_UseIntermediateBuffer)
         {
+            Debug.LogError("?");
             Draw(ShaderIds.ColorAttachmentId,BuiltinRenderTextureType.CameraTarget);
             ExecuteBuffer();
         }
@@ -156,11 +155,6 @@ public partial class CameraRenderer
         Cleanup();
         //提交命令缓冲区
         Submit();
-    }
-
-    private void PreDraw()
-    {
-        m_PostFXStack.PreDrawTAA();
     }
     
     private void Draw(RenderTargetIdentifier form,RenderTargetIdentifier to,CameraPass pass = CameraPass.Color)

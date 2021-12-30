@@ -12,7 +12,7 @@ namespace CustomRP
         private RenderTexture m_HistoryMotionVectorTextures;
         private Vector2 m_Jitter;
 
-        public void PreDrawTAA()
+        private void PreDrawTAA()
         {
             m_Buffer.SetGlobalVector(ShaderIds.LastJitterId, m_Jitter);
             m_Camera.ResetProjectionMatrix();
@@ -54,7 +54,12 @@ namespace CustomRP
             m_Buffer.CopyTexture(ShaderIds.MotionVectorsTextureId, m_HistoryMotionVectorTextures);
             //m_Buffer.CopyTexture(ShaderIds.DepthTextureId, 0, 0, prevDepthData.SSR_PrevDepth_RT, 0, 0);
         }
-        
+
+        private void PostDrawTAA()
+        {
+            m_Camera.ResetProjectionMatrix();
+        }
+
         private void SetHistoryTexture()
         {
             if (m_HistoryTextures == null)

@@ -188,6 +188,7 @@ namespace CustomRP
                 }
                 else
                 {
+                    Debug.LogError(sourceId);
                     DrawFinal(sourceId,Pass.ApplyColorGrading);
                 }
             }

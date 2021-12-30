@@ -2,8 +2,8 @@
 
 public static partial class ShaderIds
 {
-    public static int FXSourceId = Shader.PropertyToID("_PostFXSource");
-    public static int FXSource2Id = Shader.PropertyToID("_PostFXSource2");
+    public static readonly int FXSourceId = Shader.PropertyToID("_PostFXSource");
+    public static readonly int FXSource2Id = Shader.PropertyToID("_PostFXSource2");
     
     public static readonly int BloomBicubicUpsamplingId = Shader.PropertyToID("_BloomBicubicUpsampling");
     public static readonly int BloomPrefilterId = Shader.PropertyToID("_BloomPrefilter");
