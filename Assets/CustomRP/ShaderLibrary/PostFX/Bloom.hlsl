@@ -1,7 +1,6 @@
 ﻿#ifndef CUSTOM_BLOOM_INPUT_INCLUDED
 #define CUSTOM_BLOOM_INPUT_INCLUDED
 
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 #include "Assets/CustomRP/ShaderLibrary/Common.hlsl"
 
 bool _BloomBicubicUpsampling;

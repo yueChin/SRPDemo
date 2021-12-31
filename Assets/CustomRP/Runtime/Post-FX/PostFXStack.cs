@@ -64,7 +64,7 @@ namespace CustomRP
             }
             else
             {
-                DoFinal(ShaderIds.BloomResultId);
+                DoFinal(sourceId);
             }
             m_Content.ExecuteCommandBuffer(m_Buffer);
             m_Buffer.Clear();
@@ -73,13 +73,14 @@ namespace CustomRP
         private void Draw(RenderTargetIdentifier from,RenderTargetIdentifier to,Pass pass,RenderTargetIdentifier depth = default)
         {
             m_Buffer.SetGlobalTexture(ShaderIds.FXSourceId,from);
+            m_Buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
             if (depth == default)
             {
-                m_Buffer.SetRenderTarget(to,depth);
+                m_Buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
             }
             else
             {
-                m_Buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+                m_Buffer.SetRenderTarget(to,depth);
             }
             m_Buffer.DrawProcedural(Matrix4x4.identity, m_PostFXSettings.Material,(int)pass,MeshTopology.Triangles,3);
         }

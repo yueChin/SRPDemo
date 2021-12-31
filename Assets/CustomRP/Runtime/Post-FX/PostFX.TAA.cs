@@ -14,6 +14,24 @@ namespace CustomRP
 
         private void PreDrawTAA()
         {
+            if (m_HistoryTextures == null)
+            {
+                m_HistoryTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, RenderTextureFormat.ARGBHalf, 0)
+                {
+                    bindTextureMS = false
+                };
+                m_HistoryTextures.Create();
+            }
+
+            if (m_HistoryMotionVectorTextures)
+            {
+                m_HistoryMotionVectorTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, RenderTextureFormat.ARGBHalf, 0)
+                {
+                    bindTextureMS = false
+                };
+                m_HistoryMotionVectorTextures.Create();
+            }
+            
             m_Buffer.SetGlobalVector(ShaderIds.LastJitterId, m_Jitter);
             m_Camera.ResetProjectionMatrix();
             m_Camera.nonJitteredProjectionMatrix = m_Camera.projectionMatrix;
@@ -62,6 +80,24 @@ namespace CustomRP
 
         private void SetHistoryTexture()
         {
+            if (m_HistoryTextures == null)
+            {
+                m_HistoryTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, RenderTextureFormat.ARGBHalf, 0)
+                {
+                    bindTextureMS = false
+                };
+                m_HistoryTextures.Create();
+            }
+
+            if (m_HistoryMotionVectorTextures == null)
+            {
+                m_HistoryMotionVectorTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, RenderTextureFormat.ARGBHalf, 0)
+                {
+                    bindTextureMS = false
+                };
+                m_HistoryMotionVectorTextures.Create();
+            }
+            
             if (m_HistoryTextures == null)
             {
                 m_HistoryTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y,0,RenderTextureFormat.ARGBHalf, 0)

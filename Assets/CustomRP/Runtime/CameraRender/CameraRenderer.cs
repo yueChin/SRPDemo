@@ -48,6 +48,7 @@ public partial class CameraRenderer
     private Vector2Int m_BufferSize;
 
     private readonly CameraProperty m_CameraProperty = new CameraProperty();
+
     public enum CameraPass
     {
         Color = 0,
@@ -123,7 +124,8 @@ public partial class CameraRenderer
         m_Buffer.SetGlobalVector(s_BufferSizeId,new Vector4(1f / m_BufferSize.x,1f / m_BufferSize.y,m_BufferSize.x,m_BufferSize.y));
         ExecuteBuffer();
         m_Lighting.Setup(content,m_CullingResults,shadowSettings,useLightsPerObject,cameraSettings.MaskLights ? cameraSettings.RenderingLayerMask : -1);
-        
+
+        cameraBufferSettings.AA.TAA.Enable &= m_UseMotionVectorTexture;
         //cameraBufferSettings.FXAA.Enable &= cameraSettings.AllowFXAA;
         m_PostFXStack.Setup(content,camera,m_CameraProperty,m_BufferSize,postFXSettings,cameraSettings.KeepAlpha,m_UseHDR,colorLutResolution
             ,cameraSettings.FinalBlendMode,cameraBufferSettings.BicubicRescalingMode,cameraBufferSettings.AA);
@@ -146,7 +148,6 @@ public partial class CameraRenderer
         }
         else if (m_UseIntermediateBuffer)
         {
-            Debug.LogError("?");
             Draw(ShaderIds.ColorAttachmentId,BuiltinRenderTextureType.CameraTarget);
             ExecuteBuffer();
         }
@@ -318,8 +319,8 @@ public partial class CameraRenderer
         {
             m_Buffer.SetRenderTarget(ShaderIds.MotionVectorsTextureId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
             m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,(int)CameraPass.MotionVector,MeshTopology.Triangles,3);
+            ExecuteBuffer();
         }
-        ExecuteBuffer();
     }
 
     /// <summary>

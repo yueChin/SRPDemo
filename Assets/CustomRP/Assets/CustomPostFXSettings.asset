@@ -26,7 +26,7 @@ MonoBehaviour:
     Tint: 0
   m_SplitToningSettings:
     Shadows: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-    HightLights: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    HightLights: {r: 1, g: 1, b: 1, a: 1}
     Balance: 0
   m_ChannelMixerSettings:
     Red: {x: 1, y: 0, z: 0}
@@ -41,7 +41,7 @@ MonoBehaviour:
     HighlightsStart: 0
     HighlightEnd: 0
   m_Bloom:
-    MaxIterations: 1
+    MaxIterations: 0
     DownScaleLimit: 21
     BicubicUpsampling: 1
     Threshold: 1

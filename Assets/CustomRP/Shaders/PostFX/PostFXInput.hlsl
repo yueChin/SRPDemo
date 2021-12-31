@@ -19,9 +19,9 @@ float4 GetSource(float2 screenUV)
     return SAMPLE_TEXTURE2D_LOD(_PostFXSource,sampler_linear_clamp,screenUV,0);
 }
 
-float4 GetSource(float2 screenUV,float2 offset)
+float4 GetSourceWithOffset(float2 screenUV,float2 offset)
 {
-    float offsetUV = offset * GetSourceTexelSize();
+    float offsetUV = offset * GetSourceTexelSize() ;
     return SAMPLE_TEXTURE2D_LOD(_PostFXSource,sampler_linear_clamp,screenUV + offsetUV,0);
 }
 

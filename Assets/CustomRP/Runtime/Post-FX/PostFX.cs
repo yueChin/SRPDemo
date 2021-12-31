@@ -155,7 +155,7 @@ namespace CustomRP
             m_Buffer.SetGlobalFloat(ShaderIds.ColorGradingLUTInLogCId,m_UseHDR && pass != Pass.ColorGradingNone ? 1f : 0f);
             Draw(sourceId, ShaderIds.ColorGradingLUTId,pass);
             m_Buffer.SetGlobalVector(ShaderIds.ColorGradingLUTParametersId,new Vector4( 1f / lutWeight, 1f / lutHeight,lutHeight - 1f));
-        
+
             m_Buffer.SetGlobalFloat(ShaderIds.FinalSrcBlendId,1f);
             m_Buffer.SetGlobalFloat(ShaderIds.FinalDstBlendId,0f);
             if (m_AA.FXAA.Enable || m_AA.TAA.Enable)
@@ -188,7 +188,6 @@ namespace CustomRP
                 }
                 else
                 {
-                    Debug.LogError(sourceId);
                     DrawFinal(sourceId,Pass.ApplyColorGrading);
                 }
             }

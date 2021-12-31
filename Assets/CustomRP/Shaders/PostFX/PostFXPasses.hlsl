@@ -31,13 +31,29 @@ float3 ColorGrade(float3 color,bool useACES)
     color = ColorGradingContrast(color,useACES);
     color = ColorGradingFilter(color);
     color = max(color,0.0);
-    color = ColorGradeSplitToning(color);
+    color = ColorGradeSplitToning(color,useACES);
     color = ColorGradingChannelMixer(color);
     color = max(color,0.0);
     color = ColorGradingShadowsMidtonesHighlights(color,useACES);
     color = ColorGradingHueShift(color);
     color = ColorGradingSaturation(color,useACES);
+    color = max(useACES ? ACEScg_to_ACES(color) : color, 0.0);
     return color;
+
+    color = ColorGradePostExposure(color);
+    color = ColorGradeWhiteBalance(color);
+    color = ColorGradingContrast(color, useACES);
+    color = ColorGradingFilter(color);
+    //消除负值
+    color = max(color, 0.0);
+    color = ColorGradeSplitToning(color, useACES);
+    color = ColorGradingChannelMixer(color);
+    color = max(color, 0.0);
+    color = ColorGradingShadowsMidtonesHighlights(color, useACES);
+    color = ColorGradingHueShift(color);
+    color = ColorGradingSaturation(color, useACES);
+    return max(useACES ? ACEScg_to_ACES(color) : color, 0.0);
+    
 }
 
 float3 GetColorGradedLUT(float2 uv,bool useACES = false)
