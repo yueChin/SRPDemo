@@ -126,14 +126,14 @@ public partial class CameraRenderer
         m_Lighting.Setup(content,m_CullingResults,shadowSettings,useLightsPerObject,cameraSettings.MaskLights ? cameraSettings.RenderingLayerMask : -1);
 
         cameraBufferSettings.AA.TAA.Enable &= m_UseMotionVectorTexture;
-        //cameraBufferSettings.FXAA.Enable &= cameraSettings.AllowFXAA;
+        cameraBufferSettings.AA.FXAA.Enable &= cameraSettings.CameraAA.AllowFXAA;
         m_PostFXStack.Setup(content,camera,m_CameraProperty,m_BufferSize,postFXSettings,cameraSettings.KeepAlpha,m_UseHDR,colorLutResolution
             ,cameraSettings.FinalBlendMode,cameraBufferSettings.BicubicRescalingMode,cameraBufferSettings.AA);
         
         m_Buffer.EndSample(SampleName);
-        
-        Setup();
-        
+
+        PreRender( cameraBufferSettings);
+        SetupCamera();
         //绘制几何体
         DrawVisibleGeometry(useDynamicBatching,useGPUInstancing,useLightsPerObject,cameraSettings.RenderingLayerMask);
         //绘制SRP不支持的内置shader类型
@@ -151,6 +151,7 @@ public partial class CameraRenderer
             Draw(ShaderIds.ColorAttachmentId,BuiltinRenderTextureType.CameraTarget);
             ExecuteBuffer();
         }
+        PostRender( cameraBufferSettings);
         DrawGizmosAfterFX();
 
         Cleanup();
@@ -196,10 +197,26 @@ public partial class CameraRenderer
         
         //2.绘制天空盒
         m_Content.DrawSkybox(m_Camera);
-        if (m_UseDepthTexture || m_UseColorTexture || m_UseMotionVectorTexture)
+        if (m_UseDepthTexture || m_UseColorTexture)
         {
             CopyAttachments();
         }
+        
+        if (m_UseMotionVectorTexture)
+        {
+            m_Buffer.SetRenderTarget(ShaderIds.MotionVectorsTextureId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+            m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,(int)CameraPass.MotionVector,MeshTopology.Triangles,3);
+            m_CameraProperty.MotionVectorTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y,0,RenderTextureFormat.Depth,0)
+            {
+                bindTextureMS = false,
+                name = "MotionVector"
+            };
+            m_CameraProperty.MotionVectorTextures.Create();
+            m_Buffer.CopyTexture(ShaderIds.MotionVectorsTextureId, m_CameraProperty.MotionVectorTextures);
+            m_Buffer.SetRenderTarget(ShaderIds.ColorAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+            ExecuteBuffer();
+        }
+        
         sortingSettings.criteria = SortingCriteria.CommonTransparent;
         drawingSettings.sortingSettings = sortingSettings;
         //只绘制RenderQueue为transparent透明的物体
@@ -222,13 +239,13 @@ public partial class CameraRenderer
     /// <summary>
     /// 设置相机的属性和矩阵
     /// </summary>
-    private void Setup()
+    private void SetupCamera()
     {
         m_Content.SetupCameraProperties(m_Camera);
         //得到相机的clear flags
         CameraClearFlags flags = m_Camera.clearFlags;
 
-        this.m_UseIntermediateBuffer = m_UseScaleRendering || m_UseColorTexture || m_UseDepthTexture || m_UseMotionVectorTexture || m_PostFXStack.IsActive;
+        this.m_UseIntermediateBuffer = m_UseScaleRendering || m_UseColorTexture || m_UseDepthTexture || m_PostFXStack.IsActive;
         if (m_UseIntermediateBuffer)
         {
             if (flags > CameraClearFlags.Color)
@@ -241,7 +258,7 @@ public partial class CameraRenderer
             m_Buffer.GetTemporaryRT(ShaderIds.DepthAttachmentId,m_BufferSize.x,m_BufferSize.y,32,FilterMode.Point, RenderTextureFormat.Depth);
             m_Buffer.SetRenderTarget(ShaderIds.ColorAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store
                 ,ShaderIds.DepthAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
-            m_Buffer.GetTemporaryRT(ShaderIds.MotionVectorsTextureId,m_BufferSize.x,m_BufferSize.y,1,FilterMode.Bilinear, RenderTextureFormat.ARGBHalf);
+            m_Buffer.GetTemporaryRT(ShaderIds.MotionVectorsTextureId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Point,RenderTextureFormat.Depth);
         }
         //设置相机清除状态
         m_Buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
@@ -253,6 +270,52 @@ public partial class CameraRenderer
         ExecuteBuffer();
     }
 
+    public void PreRender(CameraBufferSettings cameraBufferSettings)
+    {
+        if (cameraBufferSettings.CopyMotionVector)
+        {
+            if (m_CameraProperty.MotionVectorTextures == null)
+            {
+                m_CameraProperty.MotionVectorTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y,0,RenderTextureFormat.Depth, 0)
+                {
+                    bindTextureMS = false,
+                };
+                m_CameraProperty.MotionVectorTextures.Create();
+            }
+        }
+        
+        if (cameraBufferSettings.AA.TAA.Enable)
+        {
+            if (m_CameraProperty.HistoryMotionVectorTextures == null)
+            {
+                m_CameraProperty.HistoryMotionVectorTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, RenderTextureFormat.ARGBHalf, 0)
+                {
+                    bindTextureMS = false
+                };
+                m_CameraProperty.HistoryMotionVectorTextures.Create();
+            }
+        }
+        
+        if (cameraBufferSettings.AA.TAA.Enable)
+        {
+            if (m_CameraProperty.HistoryTextures == null)
+            {
+                m_CameraProperty.HistoryTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, RenderTextureFormat.ARGBHalf, 0)
+                {
+                    filterMode = FilterMode.Bilinear,
+                    bindTextureMS = false,
+                    antiAliasing = 1
+                };
+                m_CameraProperty.HistoryTextures.Create();
+            }
+        }
+    }
+    
+    public void PostRender(CameraBufferSettings cameraBufferSettings)
+    {
+       
+    }
+    
     private void Cleanup()
     {
         m_Lighting.Cleanup();
@@ -269,11 +332,13 @@ public partial class CameraRenderer
             {
                 m_Buffer.ReleaseTemporaryRT(ShaderIds.ColorTextureId);
             }
+        }
 
-            if (m_UseMotionVectorTexture)
-            {
-                m_Buffer.ReleaseTemporaryRT(ShaderIds.MotionVectorsTextureId);
-            }
+        if (m_UseMotionVectorTexture)
+        {
+            m_Buffer.ReleaseTemporaryRT(ShaderIds.MotionVectorsTextureId);
+            m_CameraProperty.MotionVectorTextures.Release();
+            CoreUtils.Destroy(m_CameraProperty.MotionVectorTextures);
         }
     }
     
@@ -312,15 +377,8 @@ public partial class CameraRenderer
             m_Buffer.SetRenderTarget(ShaderIds.ColorAttachmentId,RenderBufferLoadAction.Load,RenderBufferStoreAction.Store
                 ,ShaderIds.DepthAttachmentId,RenderBufferLoadAction.Load,RenderBufferStoreAction.Store);
         }
+
         ExecuteBuffer();
-        
-        
-        if (m_UseMotionVectorTexture)
-        {
-            m_Buffer.SetRenderTarget(ShaderIds.MotionVectorsTextureId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
-            m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,(int)CameraPass.MotionVector,MeshTopology.Triangles,3);
-            ExecuteBuffer();
-        }
     }
 
     /// <summary>

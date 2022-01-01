@@ -31,6 +31,10 @@ public partial class CameraRenderer
         public float4x4 NonJitterTextureVP;
         public float4x4 LastInverseVP;
 
+        public RenderTexture MotionVectorTextures;
+        public RenderTexture HistoryTextures;
+        public RenderTexture HistoryMotionVectorTextures;
+        
         public void PreRender(Camera camera,float3 offset)
         {
             NonJitterP = camera.nonJitteredProjectionMatrix;

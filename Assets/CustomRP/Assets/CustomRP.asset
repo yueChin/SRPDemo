@@ -43,7 +43,7 @@ MonoBehaviour:
         SubpixelBlending: 0.75
         Quality: 0
       TAA:
-        Enable: 1
+        Enable: 0
         JitterSpread: 0
         Sharpness: 0
         StationaryBlending: 0
