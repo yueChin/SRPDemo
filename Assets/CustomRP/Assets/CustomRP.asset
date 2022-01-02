@@ -44,7 +44,7 @@ MonoBehaviour:
         Quality: 0
       TAA:
         Enable: 0
-        JitterSpread: 0
+        JitterSpread: 0.1
         Sharpness: 0
         StationaryBlending: 0
         MotionBlending: 0
@@ -58,5 +58,4 @@ MonoBehaviour:
     RenderScale: 1
     BicubicRescalingMode: 2
     CopyMotionVector: 1
-    CopyMotionVectorReflection: 0
   m_ColorLUTResolution: 16

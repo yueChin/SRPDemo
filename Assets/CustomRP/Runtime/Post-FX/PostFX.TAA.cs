@@ -30,29 +30,27 @@ namespace CustomRP
             m_Buffer.SetGlobalVector(ShaderIds.JitterId,m_Jitter);
         }
         
-        private void ConfigureTAA()
+        private void ConfigureTAA(ref RenderTexture hisTex,ref RenderTexture hisMotionVectorTex)
         {
-            if (m_CameraProperty.HistoryTextures == null)
+            if (hisTex == null)
             {
-                m_CameraProperty.HistoryTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y,0,RenderTextureFormat.ARGBHalf, 0)
+                hisTex = new RenderTexture(m_BufferSize.x, m_BufferSize.y,0,m_UseHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default, 0)
                 {
                     filterMode = FilterMode.Bilinear,
                     bindTextureMS = false,
-                    antiAliasing = 1
                 };
-                //m_Buffer.CopyTexture(ShaderIds.HistoryTextureId, m_CameraProperty.HistoryTextures);
+                m_Buffer.CopyTexture(ShaderIds.ColorAttachmentId, hisTex);
             }
-            else if (m_CameraProperty.HistoryTextures.width != m_BufferSize.x || m_CameraProperty.HistoryTextures.height != m_BufferSize.y)
+            else if (hisTex.width != m_BufferSize.x || hisTex.height != m_BufferSize.y)
             {
-                m_CameraProperty.HistoryTextures.Release();
-                CoreUtils.Destroy(m_CameraProperty.HistoryTextures);
-                m_CameraProperty.HistoryTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, RenderTextureFormat.ARGBHalf, 0)
+                hisTex.Release();
+                CoreUtils.Destroy(hisTex);
+                hisTex = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 0, m_UseHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default, 0)
                 {
                     filterMode = FilterMode.Bilinear,
                     bindTextureMS = false,
-                    antiAliasing = 1
                 };
-                //m_Buffer.CopyTexture(ShaderIds.HistoryTextureId, m_CameraProperty.HistoryTextures);
+                m_Buffer.CopyTexture(ShaderIds.ColorAttachmentId, hisTex);
             }
             
             //TAA Start
@@ -62,16 +60,34 @@ namespace CustomRP
             
             m_Buffer.SetGlobalVector(ShaderIds.TemporalClipBoundingId, new Vector4(m_AA.TAA.StationaryAABBScale, m_AA.TAA.MotionAABBScale, kMotionAmplification_Bounding, 0f));
             m_Buffer.SetGlobalVector(ShaderIds.FinalBlendParametersId, new Vector4(m_AA.TAA.StationaryBlending, m_AA.TAA.MotionBlending, kMotionAmplification_Blending, 0f));
-            m_Buffer.SetGlobalTexture(ShaderIds.HistoryTextureId, m_CameraProperty.HistoryTextures);
+            m_Buffer.SetGlobalTexture(ShaderIds.HistoryTextureId, hisTex);
             //m_Buffer.SetGlobalTexture(ShaderIds.LastFrameDepthTextureId, prevDepthData.SSR_PrevDepth_RT);
-            m_Buffer.SetGlobalTexture(ShaderIds.LastFrameMotionVectorsId, m_CameraProperty.HistoryMotionVectorTextures);
+            m_Buffer.SetGlobalTexture(ShaderIds.LastFrameMotionVectorsId, hisMotionVectorTex);
             m_Buffer.SetGlobalMatrix(ShaderIds.InvLastVPId, m_CameraProperty.LastInverseVP);
         }
 
-        private void AfterDrawTAA()
+        private void AfterDrawTAA(ref RenderTexture hisTex,ref RenderTexture hisMotionVectorTex)
         {
-            //m_Buffer.CopyTexture(BuiltinRenderTextureType.CameraTarget, m_CameraProperty.HistoryTextures);
-            //m_Buffer.CopyTexture(m_CameraProperty.MotionVectorTextures, m_CameraProperty.HistoryMotionVectorTextures);
+            if (hisMotionVectorTex == null)
+            {
+                hisMotionVectorTex = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 16, RenderTextureFormat.Depth, 0)
+                {
+                    bindTextureMS = false
+                };
+                hisMotionVectorTex.Create();
+            }
+            else if (hisMotionVectorTex.width != m_BufferSize.x || hisMotionVectorTex.height != m_BufferSize.y)
+            {
+                hisMotionVectorTex.Release();
+                CoreUtils.Destroy(hisMotionVectorTex);
+                hisMotionVectorTex = new RenderTexture(m_BufferSize.x, m_BufferSize.y, 16, RenderTextureFormat.Depth, 0)
+                {
+                    bindTextureMS = false,
+                };
+            }
+
+            m_Buffer.CopyTexture(ShaderIds.FinalResultId, hisTex);
+            m_Buffer.CopyTexture(ShaderIds.MotionVectorsTextureId, hisMotionVectorTex);
             //m_Buffer.CopyTexture(ShaderIds.DepthTextureId, 0, 0, prevDepthData.SSR_PrevDepth_RT, 0, 0);
         }
 

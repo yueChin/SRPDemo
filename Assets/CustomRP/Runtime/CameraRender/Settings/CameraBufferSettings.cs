@@ -23,8 +23,5 @@ namespace CustomRP
         public BicubicRescalingMode BicubicRescalingMode;
 
         public bool CopyMotionVector;
-        
-        public bool CopyMotionVectorReflection;
-
     }
 }

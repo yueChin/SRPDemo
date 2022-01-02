@@ -281,9 +281,4 @@ public static class GraphicsUtility
         return projection;
     }
 
-    public static void CopyToTexture2D(RenderTexture source, Texture2D dest)
-    {
-        RenderTexture.active = source;
-        dest.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0);
-    }
 }

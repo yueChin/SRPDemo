@@ -70,35 +70,31 @@ namespace CustomRP
             m_Buffer.Clear();
         }
         
-        private void Draw(RenderTargetIdentifier from,RenderTargetIdentifier to,Pass pass,RenderTargetIdentifier depth = default)
+        private void Draw(RenderTargetIdentifier from,RenderTargetIdentifier to,Pass pass)
         {
             m_Buffer.SetGlobalTexture(ShaderIds.FXSourceId,from);
             m_Buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
-            if (depth == default)
-            {
-                m_Buffer.SetRenderTarget(to,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
-            }
-            else
-            {
-                m_Buffer.SetRenderTarget(to,depth);
-            }
             m_Buffer.DrawProcedural(Matrix4x4.identity, m_PostFXSettings.Material,(int)pass,MeshTopology.Triangles,3);
         }
 
-        private void DrawFinal(RenderTargetIdentifier from,Pass pass,RenderTargetIdentifier depth = default)
+        private void DrawFrameBuffer(RenderTargetIdentifier from,Pass pass)
         {
             m_Buffer.SetGlobalFloat(ShaderIds.FinalSrcBlendId,(float)m_FinalBlendMode.Source);
             m_Buffer.SetGlobalFloat(ShaderIds.FinalDstBlendId,(float)m_FinalBlendMode.Dsesination);
             m_Buffer.SetGlobalTexture(ShaderIds.FXSourceId,from);
-            if (depth == default)
-            {
-                m_Buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,m_FinalBlendMode.Dsesination == BlendMode.Zero
-                    ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load,RenderBufferStoreAction.Store);
-            }
-            else
-            {
-                m_Buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,depth);
-            }
+            m_Buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,m_FinalBlendMode.Dsesination == BlendMode.Zero
+                ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load,RenderBufferStoreAction.Store);
+            m_Buffer.SetViewport(m_Camera.pixelRect);
+            m_Buffer.DrawProcedural(Matrix4x4.identity, m_PostFXSettings.Material,(int)pass,MeshTopology.Triangles,3);
+        }
+        
+        private void DrawFinal(RenderTargetIdentifier from,Pass pass)
+        {
+            m_Buffer.SetGlobalFloat(ShaderIds.FinalSrcBlendId,(float)m_FinalBlendMode.Source);
+            m_Buffer.SetGlobalFloat(ShaderIds.FinalDstBlendId,(float)m_FinalBlendMode.Dsesination);
+            m_Buffer.SetGlobalTexture(ShaderIds.FXSourceId,from);
+            m_Buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget,m_FinalBlendMode.Dsesination == BlendMode.Zero
+                ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load,RenderBufferStoreAction.Store);
             m_Buffer.SetViewport(m_Camera.pixelRect);
             m_Buffer.DrawProcedural(Matrix4x4.identity, m_PostFXSettings.Material,(int)pass,MeshTopology.Triangles,3);
         }
