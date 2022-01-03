@@ -166,7 +166,7 @@ namespace CustomRP
                 }
                 else if(m_AA.TAA.Enable)
                 {
-                    ConfigureTAA(ref m_CameraProperty.HistoryTextures,ref m_CameraProperty.HistoryMotionVectorTextures);
+                    ConfigureTAA();
                 }
                 m_Buffer.GetTemporaryRT(ShaderIds.ColorGradingResultId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Bilinear,RenderTextureFormat.Default);
                 Draw(sourceId,ShaderIds.ColorGradingResultId, m_KeepAlpha ? Pass.ApplyColorGrading : Pass.ApplyColorGradingWithLuma);
@@ -183,7 +183,7 @@ namespace CustomRP
                 {
                     m_Buffer.GetTemporaryRT(ShaderIds.FinalResultId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Bilinear,m_UseHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
                     Draw(ShaderIds.ColorGradingResultId,ShaderIds.FinalResultId, Pass.TAA);
-                    AfterDrawTAA(ref m_CameraProperty.HistoryTextures,ref m_CameraProperty.HistoryMotionVectorTextures);
+                    AfterDrawTAA();
                     m_Buffer.ReleaseTemporaryRT(ShaderIds.ColorGradingResultId);
                     
                     bool bicubicSampling = m_BicubicRescaling == BicubicRescalingMode.UpAndDown 
@@ -208,7 +208,7 @@ namespace CustomRP
                 else if (m_AA.TAA.Enable)
                 {
                     Draw(ShaderIds.ColorGradingResultId,ShaderIds.FinalResultId, Pass.TAA);
-                    AfterDrawTAA(ref m_CameraProperty.HistoryTextures,ref m_CameraProperty.HistoryMotionVectorTextures);
+                    AfterDrawTAA();
                     m_Buffer.ReleaseTemporaryRT(ShaderIds.ColorGradingResultId);
                 }
                 else

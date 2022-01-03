@@ -49,6 +49,7 @@ public partial class CameraRenderer
 
     private readonly CameraProperty m_CameraProperty = new CameraProperty();
 
+
     public enum CameraPass
     {
         Color = 0,
@@ -203,7 +204,7 @@ public partial class CameraRenderer
         
         if (m_UseMotionVectorTexture)
         {
-            CopyMotionVectorTextures(ref m_CameraProperty.MotionVectorTextures);
+            CopyMotionVectorTextures();
         }
         
         sortingSettings.criteria = SortingCriteria.CommonTransparent;
@@ -255,23 +256,28 @@ public partial class CameraRenderer
         m_Buffer.SetGlobalTexture(ShaderIds.ColorTextureId, m_MissingTexture);
         m_Buffer.SetGlobalTexture(ShaderIds.DepthTextureId,m_MissingTexture);
         m_Buffer.SetGlobalTexture(ShaderIds.MotionVectorsTextureId,m_MissingTexture);
+        
+        m_CameraProperty.SetupCameraRender(m_Buffer,m_Camera);
+        
         ExecuteBuffer();
     }
 
-    private void CopyMotionVectorTextures(ref RenderTexture motionTex)
+    private void CopyMotionVectorTextures()
     {
+        m_Buffer.SetGlobalMatrix(ShaderIds.InvNonJitterVPId,m_CameraProperty.NonJitterInverseVP);
+        m_Buffer.SetGlobalMatrix(ShaderIds.LastVPId,m_CameraProperty.LastVP);
         m_Buffer.SetRenderTarget(ShaderIds.MotionVectorsTextureId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
         m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,(int)CameraPass.MotionVector,MeshTopology.Triangles,3);
-        if (motionTex != null)
+        if (m_CameraProperty.MotionVectorTextures == null)
         {
-            motionTex.Release();
-            CoreUtils.Destroy(motionTex);
+            m_CameraProperty.MotionVectorTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y,16,RenderTextureFormat.Depth, 0)
+            {
+                bindTextureMS = false,
+            };
+            m_CameraProperty.MotionVectorTextures.Create();
         }
-        motionTex = new RenderTexture(m_BufferSize.x, m_BufferSize.y,16,RenderTextureFormat.Depth, 0)
-        {
-            bindTextureMS = false,
-        };
-        motionTex.Create();
+        RenderTargetIdentifier motionTex = m_CameraProperty.MotionVectorTextures;
+        
         m_Buffer.CopyTexture(ShaderIds.MotionVectorsTextureId,motionTex);
         
         m_Buffer.SetRenderTarget(ShaderIds.ColorAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
@@ -364,7 +370,7 @@ public partial class CameraRenderer
         {
             p.shadowDistance = Mathf.Min(maxShadowDistance, m_Camera.farClipPlane);
             m_CullingResults = m_Content.Cull(ref p);
-            m_CameraProperty.PreRender(m_Camera,float3.zero);
+            m_CameraProperty.SetupCameraPreRender(m_Camera,float3.zero);
             return true;
         }
         return false;

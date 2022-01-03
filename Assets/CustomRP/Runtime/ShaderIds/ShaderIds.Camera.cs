@@ -14,6 +14,9 @@ public static partial class ShaderIds
     public static readonly int InvNonJitterVPId = Shader.PropertyToID("_InvNonJitterVP");
     public static readonly int LastVPId = Shader.PropertyToID("_LastVp");
     public static readonly int InvLastVPId = Shader.PropertyToID("_InvLastVp");
+    public static readonly int NonJitterVPId = Shader.PropertyToID("_NonJitterVP");
+    public static readonly int NonJitterTextureVPId = Shader.PropertyToID("_NonJitterTextureVP");
+    public static readonly int NonJitterTexturePId = Shader.PropertyToID("_NonJitterTextureP");
     
     public static readonly int LastFrameDepthTextureId = Shader.PropertyToID("_LastFrameDepthTexture");
     public static readonly int LastFrameMotionVectorsId = Shader.PropertyToID("_LastFrameMotionVectors");

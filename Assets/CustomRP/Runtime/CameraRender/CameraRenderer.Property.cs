@@ -1,5 +1,6 @@
 ﻿using CustomRP;
 using CustomRP.Runtime;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -12,42 +13,54 @@ using float3 = Unity.Mathematics.float3;
 public partial class CameraRenderer
 {
 
-    public class CameraProperty
+    public sealed unsafe class CameraProperty
     {
         public float4x4 NonJitterP;
         public float4x4 P;
         public float4x4 WorldToView;
-        public float4x4 LastP;
-        public float4x4 LastCameraLocalToWorld;
         public bool IsD3D;
         public float3 SceneOffset;
 
         public float4x4 VP;
         public float4x4 InverseVP;
         public float4x4 NonJitterVP;
-        public float4x4 LastVP;
 
         public float4x4 NonJitterInverseVP;
         public float4x4 NonJitterTextureVP;
-        public float4x4 LastInverseVP;
 
-        public RenderTexture MotionVectorTextures;
-        public RenderTexture HistoryTextures;
-        public RenderTexture HistoryMotionVectorTextures;
+        public float4x4 LastP;
+        public float4x4 LastVP;
+        public float4x4 LastInverseVP;
+        public float4x4 LastCameraLocalToWorld;
+        public float4x4 LastViewProjection { get; private set; }
+        public float4x4 LastInverseViewProjection { get; private set; }
         
-        public void PreRender(Camera camera,float3 offset)
+        public RenderTexture MotionVectorTextures;
+
+        public readonly CameraLastProperty CameraLastProperty = new CameraLastProperty();
+        public readonly HistoryTexture HistoryTexture = new HistoryTexture();
+        public readonly PreviousDepthData PreviousDepthData = new PreviousDepthData();
+        public readonly SSRCameraData SSRCameraData = new SSRCameraData();
+
+        
+        public void SetupCameraPreRender(Camera camera,float3 offset)
         {
+            CameraLastProperty.SetupCameraLastProperty(camera);
+            
+            IsD3D = GraphicsUtility.platformIsD3D;
             NonJitterP = camera.nonJitteredProjectionMatrix;
-            P = camera.projectionMatrix;
             WorldToView = camera.worldToCameraMatrix;
+            
+            LastCameraLocalToWorld = CameraLastProperty.CameraLocalToWorld;
+            LastP = CameraLastProperty.LastP;
             SceneOffset = offset;
+            P = camera.projectionMatrix;
             
             float4x4 nonJitterPNoTex = GraphicsUtility.GetGPUProjectionMatrix(NonJitterP, false, IsD3D);
             NonJitterVP = mul(nonJitterPNoTex, WorldToView);
-            IsD3D = GraphicsUtility.platformIsD3D;
             NonJitterInverseVP = inverse(NonJitterVP);
-            NonJitterTextureVP = mul(GraphicsUtility.GetGPUProjectionMatrix(NonJitterP, true, IsD3D), WorldToView);
-            LastCameraLocalToWorld.c3.xyz += SceneOffset;
+            NonJitterTextureVP = mul(GraphicsUtility.GetGPUProjectionMatrix(NonJitterVP, true, IsD3D), WorldToView);
+            LastCameraLocalToWorld.c3.xyz += offset;
             float4x4 lastV = GetWorldToCamera(ref LastCameraLocalToWorld);
             LastVP = mul(LastP, lastV);
             LastP = nonJitterPNoTex;
@@ -56,6 +69,21 @@ public partial class CameraRenderer
             InverseVP = inverse(VP);
         }
 
+
+        public void SetupCameraRender(CommandBuffer buffer,Camera camera)
+        {
+            LastViewProjection = CameraLastProperty.LastVP;
+            LastInverseViewProjection = LastInverseVP;
+            buffer.SetGlobalMatrix(ShaderIds.LastVPId, LastViewProjection);
+            buffer.SetGlobalMatrix(ShaderIds.NonJitterVPId, NonJitterVP);
+            buffer.SetGlobalMatrix(ShaderIds.NonJitterTextureVPId, NonJitterTextureVP);
+            buffer.SetGlobalMatrix(ShaderIds.InvNonJitterVPId, NonJitterInverseVP);
+            buffer.SetGlobalMatrix(ShaderIds.InvVPId, InverseVP);
+            CameraLastProperty.LastVP = NonJitterVP;
+            CameraLastProperty.LastP = LastP;
+            CameraLastProperty.CameraLocalToWorld = camera.transform.localToWorldMatrix;
+        }
+        
         private static float4x4 GetWorldToCamera(ref float4x4 localToWorldMatrix)
         {
             float4x4 worldToCameraMatrix = MathLib.GetWorldToLocal(ref localToWorldMatrix);
