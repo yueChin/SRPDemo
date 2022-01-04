@@ -266,19 +266,24 @@ public partial class CameraRenderer
     {
         m_Buffer.SetGlobalMatrix(ShaderIds.InvNonJitterVPId,m_CameraProperty.NonJitterInverseVP);
         m_Buffer.SetGlobalMatrix(ShaderIds.LastVPId,m_CameraProperty.LastVP);
-        m_Buffer.SetRenderTarget(ShaderIds.MotionVectorsTextureId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
-        m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,(int)CameraPass.MotionVector,MeshTopology.Triangles,3);
         if (m_CameraProperty.MotionVectorTextures == null)
         {
             m_CameraProperty.MotionVectorTextures = new RenderTexture(m_BufferSize.x, m_BufferSize.y,16,RenderTextureFormat.Depth, 0)
             {
+                name = "MotionVectorTextures",
                 bindTextureMS = false,
             };
             m_CameraProperty.MotionVectorTextures.Create();
         }
+        CameraProperty.Resize(m_CameraProperty.MotionVectorTextures,m_BufferSize.x,m_BufferSize.y);
         RenderTargetIdentifier motionTex = m_CameraProperty.MotionVectorTextures;
         
-        m_Buffer.CopyTexture(ShaderIds.MotionVectorsTextureId,motionTex);
+        m_Buffer.SetRenderTarget(motionTex,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
+        m_Buffer.DrawProcedural(Matrix4x4.identity, m_Material,(int)CameraPass.MotionVector,MeshTopology.Triangles,3);
+        
+      
+        m_Buffer.SetGlobalTexture(ShaderIds.MotionVectorsTextureId,motionTex);
+        //m_Buffer.CopyTexture(ShaderIds.MotionVectorsTextureId,motionTex);
         
         m_Buffer.SetRenderTarget(ShaderIds.ColorAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
         ExecuteBuffer();
@@ -305,8 +310,6 @@ public partial class CameraRenderer
         if (m_UseMotionVectorTexture)
         {
             m_Buffer.ReleaseTemporaryRT(ShaderIds.MotionVectorsTextureId);
-            // m_CameraProperty.MotionVectorTextures.Release();
-            // CoreUtils.Destroy(m_CameraProperty.MotionVectorTextures);
         }
     }
     
@@ -380,6 +383,7 @@ public partial class CameraRenderer
     {
         CoreUtils.Destroy(m_Material);
         CoreUtils.Destroy(m_MissingTexture);
+        m_CameraProperty.DisposeProperty();
     }
     
     partial void DrawUnsupportedShaders();

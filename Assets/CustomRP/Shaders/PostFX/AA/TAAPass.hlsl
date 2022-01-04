@@ -167,11 +167,12 @@ float2 ReprojectedMotionVectorUV(float2 uv, out float outDepth)
     float neighborhood;
     const float2 k = _CameraDepthTexture_TexelSize.xy;
     uint i;
-    outDepth  = _CameraDepthTexture.Sample(sampler_CameraDepthTexture, uv).x;
+    //outDepth = _CameraDepthTexture.Sample(sampler_CameraDepthTexture, uv).x;
+    outDepth = SAMPLE_TEXTURE2D(_CameraDepthTexture,sampler_CameraDepthTexture,uv).r;
     float3 result = float3(0, 0,  outDepth);
     UNITY_UNROLL
     for(i = 0; i < 8; ++i){
-        neighborhood = SAMPLE_DEPTH_OFFSET(_CameraDepthTexture, sampler_CameraDepthTexture, uv, _OffsetArray[i]);
+        neighborhood = SAMPLE_DEPTH_OFFSET(_CameraDepthTexture, sampler_CameraDepthTexture, uv, _OffsetArray[i] );
         result = lerp(result, float3(_OffsetArray[i], neighborhood), COMPARE_DEPTH(neighborhood, result.z));
     }
 

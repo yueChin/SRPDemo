@@ -1,12 +1,14 @@
 ﻿using CustomRP;
+using CustomRP.CameraRender;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 /// <summary>
 /// 相机渲染管理类：单独控制每个相机的渲染
 /// </summary>
 public partial class CameraRenderer
 {
-    public sealed class SSRCameraData
+    public sealed class SSRCameraData :IDisposeProperty
     {
         public Vector2 BufferSize { get; private set; }
         public ColorLUTResolution RayCastingResolution { get; private set; }
@@ -71,6 +73,13 @@ public partial class CameraRenderer
                 Object.DestroyImmediate(targetRT);
                 targetRT = null;
             }
+        }
+        
+        public void DisposeProperty()
+        {
+            CheckAndRelease(ref SSRTemporalPrevRT);
+            CheckAndRelease(ref SSRHierarchicalDepthRT);
+            CheckAndRelease(ref SSRHierarchicalDepthBackUpRT);
         }
     }
 }

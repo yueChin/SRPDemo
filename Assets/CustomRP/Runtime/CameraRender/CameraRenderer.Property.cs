@@ -1,4 +1,5 @@
 ﻿using CustomRP;
+using CustomRP.CameraRender;
 using CustomRP.Runtime;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -13,7 +14,7 @@ using float3 = Unity.Mathematics.float3;
 public partial class CameraRenderer
 {
 
-    public sealed unsafe class CameraProperty
+    public sealed unsafe class CameraProperty : IDisposeProperty
     {
         public float4x4 NonJitterP;
         public float4x4 P;
@@ -93,6 +94,27 @@ public partial class CameraRenderer
             worldToCameraMatrix.c2.z = row2.z;
             worldToCameraMatrix.c3.z = row2.w;
             return worldToCameraMatrix;
+        }
+        
+        public static void Resize(RenderTexture rt, int width, int height)
+        {
+            if (rt.width == width && rt.height == height)
+            {
+                return;
+            }
+            rt.Release();
+            rt.width = width;
+            rt.height = height;
+            rt.Create();
+        }
+
+        public void DisposeProperty()
+        {
+            Debug.LogError("????");
+            Object.DestroyImmediate(MotionVectorTextures);
+            HistoryTexture.DisposeProperty();
+            PreviousDepthData.DisposeProperty();
+            SSRCameraData.DisposeProperty();
         }
     }
 }

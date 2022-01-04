@@ -13,11 +13,16 @@ public partial class CameraRenderer
         public void SetupPreviousDepthData(Vector2Int currentSize)
         {
             BufferSize = currentSize;
-            SSRPrevDepthRT = new RenderTexture(currentSize.x, currentSize.y, 0, RenderTextureFormat.Depth)
+            if (SSRPrevDepthRT == null)
             {
-                filterMode = FilterMode.Bilinear
-            };
-            SSRPrevDepthRT.Create();
+                SSRPrevDepthRT = new RenderTexture(currentSize.x, currentSize.y, 0, RenderTextureFormat.Depth)
+                {
+                    name = "SSRPrevDepthRT",
+                    filterMode = FilterMode.Bilinear
+                };
+                SSRPrevDepthRT.Create();
+            }
+            CameraProperty.Resize(SSRPrevDepthRT,currentSize.x,currentSize.y);
         }
         
         public bool SetupData(Vector2Int currentSize)

@@ -44,12 +44,12 @@ MonoBehaviour:
         Quality: 0
       TAA:
         Enable: 1
-        JitterSpread: 0.1
+        JitterSpread: 0.34
         Sharpness: 0
         StationaryBlending: 0
-        MotionBlending: 0
-        StationaryAABBScale: 0
-        MotionAABBScale: 0
+        MotionBlending: 0.389
+        StationaryAABBScale: 1.75
+        MotionAABBScale: 1.18
     AllowHDR: 1
     CopyDepth: 1
     CopyDepthReflection: 1

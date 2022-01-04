@@ -1,4 +1,5 @@
 ﻿using CustomRP;
+using CustomRP.CameraRender;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -7,7 +8,7 @@ using UnityEngine.Rendering;
 /// </summary>
 public partial class CameraRenderer
 {
-    public sealed class HistoryTexture
+    public sealed class HistoryTexture :IDisposeProperty
     {
         public RenderTexture HistoryRT;
         public RenderTexture HistoryMotionVectorRT;
@@ -15,26 +16,35 @@ public partial class CameraRenderer
         
         public void SetupHistoryTexture(Vector2Int buffSize,bool useHDR)
         {
-            HistoryRT = new RenderTexture(buffSize.x, buffSize.y, 0,useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default, 0)
+            if (HistoryRT == null)
             {
-                bindTextureMS = false
-            };
-            HistoryRT.Create();
+                HistoryRT = new RenderTexture(buffSize.x, buffSize.y, 0,useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default, 0)
+                {
+                    name = "HistoryRT",
+                    bindTextureMS = false
+                };
+                HistoryRT.Create();
+            }
 
-            HistoryMotionVectorRT = new RenderTexture(buffSize.x, buffSize.y, 0, RenderTextureFormat.Depth, 0)
+
+            if (HistoryMotionVectorRT == null)
             {
-                bindTextureMS = false
-            };
-            HistoryMotionVectorRT.Create();
+                HistoryMotionVectorRT = new RenderTexture(buffSize.x, buffSize.y, 0, RenderTextureFormat.Depth, 0)
+                {
+                    name = "HistoryMotionVectorRT",
+                    bindTextureMS = false
+                };
+                HistoryMotionVectorRT.Create();
+            }
         }
         
-        public void SetupProperty(Camera camera,Vector2Int buffSize)
+        public void SetupProperty(Vector2Int buffSize,bool useHDR)
         {
             int bufferWidth = buffSize.x;
-            int camHeight = buffSize.y;
+            int buffHeight = buffSize.y;
             if (!HistoryRT)
             {
-                HistoryRT = new RenderTexture(camera.pixelWidth, camera.pixelHeight, 0, RenderTextureFormat.Default, 0)
+                HistoryRT = new RenderTexture(bufferWidth, buffHeight, 0, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default, 0)
                 {
                     bindTextureMS = false
                 };
@@ -43,28 +53,16 @@ public partial class CameraRenderer
 
             if (!HistoryMotionVectorRT)
             {
-                HistoryMotionVectorRT = new RenderTexture(camera.pixelWidth, camera.pixelHeight, 0, RenderTextureFormat.Depth, 0)
+                HistoryMotionVectorRT = new RenderTexture(bufferWidth,buffHeight, 0, RenderTextureFormat.Depth, 0)
                 {
                     bindTextureMS = false
                 };
                 HistoryMotionVectorRT.Create();
             }
-            Resize(HistoryRT, bufferWidth, camHeight);
-            Resize(HistoryMotionVectorRT, bufferWidth, camHeight);
+            CameraProperty.Resize(HistoryRT, bufferWidth, buffHeight);
+            CameraProperty.Resize(HistoryMotionVectorRT, bufferWidth, buffHeight);
         }
-        
-        private static void Resize(RenderTexture rt, int width, int height)
-        {
-            if (rt.width == width && rt.height == height)
-            {
-                return;
-            }
-            rt.Release();
-            rt.width = width;
-            rt.height = height;
-            rt.Create();
-        }
-        
+
         public void SetHistory(Vector2Int buffSize, CommandBuffer buffer, ref RenderTexture history, RenderTargetIdentifier renderTarget)
         {
             if (history == null)
@@ -89,6 +87,12 @@ public partial class CameraRenderer
                 };
                 buffer.CopyTexture(renderTarget, history);
             }
+        }
+
+        public void DisposeProperty()
+        {
+            Object.DestroyImmediate(HistoryRT);
+            Object.DestroyImmediate(HistoryMotionVectorRT);
         }
     }
 }
