@@ -244,10 +244,10 @@ public partial class CameraRenderer
             }
             
             m_Buffer.GetTemporaryRT(ShaderIds.ColorAttachmentId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Bilinear,m_UseHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
-            m_Buffer.GetTemporaryRT(ShaderIds.DepthAttachmentId,m_BufferSize.x,m_BufferSize.y,32,FilterMode.Point, RenderTextureFormat.Depth);
+            m_Buffer.GetTemporaryRT(ShaderIds.DepthAttachmentId,m_BufferSize.x,m_BufferSize.y,32,FilterMode.Point, RenderTextureFormat.RHalf);
             m_Buffer.SetRenderTarget(ShaderIds.ColorAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store
                 ,ShaderIds.DepthAttachmentId,RenderBufferLoadAction.DontCare,RenderBufferStoreAction.Store);
-            m_Buffer.GetTemporaryRT(ShaderIds.MotionVectorsTextureId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Point,RenderTextureFormat.Depth);
+            m_Buffer.GetTemporaryRT(ShaderIds.MotionVectorsTextureId,m_BufferSize.x,m_BufferSize.y,0,FilterMode.Point,RenderTextureFormat.RHalf);
         }
         //设置相机清除状态
         m_Buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags == CameraClearFlags.Color, 
@@ -332,7 +332,7 @@ public partial class CameraRenderer
         
         if (m_UseDepthTexture)
         {
-            m_Buffer.GetTemporaryRT(ShaderIds.DepthTextureId,m_BufferSize.x,m_BufferSize.y,32,FilterMode.Point,RenderTextureFormat.Depth);
+            m_Buffer.GetTemporaryRT(ShaderIds.DepthTextureId,m_BufferSize.x,m_BufferSize.y,32,FilterMode.Point,RenderTextureFormat.RHalf);
             if (s_CopyTextureSupported)
             {
                 m_Buffer.CopyTexture(ShaderIds.DepthAttachmentId,ShaderIds.DepthTextureId);

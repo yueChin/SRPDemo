@@ -110,7 +110,6 @@ public partial class CameraRenderer
 
         public void DisposeProperty()
         {
-            Debug.LogError("????");
             Object.DestroyImmediate(MotionVectorTextures);
             HistoryTexture.DisposeProperty();
             PreviousDepthData.DisposeProperty();
